@@ -1,0 +1,25 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: max
+    paths:
+        - .
+    excludePaths:
+        - .phpstan
+        - public/bundles
+        - var
+        - vendor
+    tmpDir: .phpstan
+    doctrine:
+        objectManagerLoader: tests/object-manager.php
+    disallowedFunctionCalls:
+        -
+            function: 'var_dump()'
+            message: 'Use some logger instead'
+        -
+            function: 'dump()'
+            message: 'Use some logger instead'
+        -
+            function: 'print_r()'
+            message: 'Use some logger instead'

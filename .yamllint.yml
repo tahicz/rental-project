@@ -1,0 +1,15 @@
+# For all rules
+ignore: |
+    /node_modules/
+    /vendor/
+
+extends: default
+
+rules:
+    comments-indentation: disable
+    document-start:
+        present: false
+    indentation:
+        spaces: 4
+    line-length:
+        max: 150

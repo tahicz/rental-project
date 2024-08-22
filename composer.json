@@ -86,6 +86,14 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
+        ],
+        "phpunit": "vendor/bin/phpunit -d xdebug.mode=coverage -c phpunit.xml.dist --coverage-text --testdox",
+        "cs-fix": "vendor/bin/php-cs-fixer fix",
+        "yamllint": "yamllint .",
+        "phpstan": "vendor/bin/phpstan analyse --memory-limit 1G",
+        "pre-commit": [
+            "Composer\\Config::disableProcessTimeout",
+            "composer phpunit && composer cs-fix && composer phpstan && composer yamllint && echo 'All done'"
         ]
     },
     "conflict": {
