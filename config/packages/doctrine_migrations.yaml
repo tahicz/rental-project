@@ -3,4 +3,14 @@ doctrine_migrations:
         # namespace is arbitrary but should be different from App\Migrations
         # as migrations classes should NOT be autoloaded
         'DoctrineMigrations': '%kernel.project_dir%/migrations'
-    enable_profiler: false
+#    enable_profiler: false
+    enable_profiler: '%kernel.debug%'
+
+    # Connection to use for the migrations
+    #    connection: default
+
+    # Entity manager to use for migrations. This overrides the "connection" setting.
+#    em: default
+
+    # Possible values: "BY_YEAR", "BY_YEAR_AND_MONTH", false
+    organize_migrations: BY_YEAR_AND_MONTH
