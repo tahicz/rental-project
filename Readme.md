@@ -9,3 +9,9 @@ DDev https://ddev.readthedocs.io/en/stable/
 ```shell
 ddev start
 ```
+
+## Good to know
+
+```shell
+ddev describe # show all information about container (URL, hosts...)
+```
