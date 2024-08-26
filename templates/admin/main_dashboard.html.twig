@@ -1,5 +1,39 @@
 {% extends '@EasyAdmin/layout.html.twig' %}
 
 {% block main %}
-    {# ... #}
+    <div class="accordion accordion-flush" id="rentalRecipesFlush">
+        {% for rent in rentalRecipes %}
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                    {{ 'Total monthly rent:'|trans }} {{ rent.fullMonthlyRate }}
+                </button>
+            </h2>
+            <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                <div class="accordion-body">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th scope="col">{{ 'Description'|trans }}</th>
+                            <th scope="col">{{ 'Fee amount'|trans }}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <th scope="row">{{ 'Basic rent'|trans }}</th>
+                            <td>{{ rent.basicRent }}</td>
+                        </tr>
+                        {% for fee in rent.additionalFees %}
+                            <tr>
+                                <th scope="row">{{ fee.description|trans }}</th>
+                                <td>{{ fee.feeAmount }} ({{ fee.paymentFrequency }})</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 {% endblock main %}

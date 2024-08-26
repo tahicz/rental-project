@@ -2,43 +2,38 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\RentalRecipe;
+use App\Entity\AdditionalFee;
+use App\Enum\AdditionalFeeEnum;
+use App\Enum\PaymentFrequencyEnum;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 
-class RentalRecipeCrudController extends AbstractCrudController
+class AdditionalFeeCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
-        return RentalRecipe::class;
+        return AdditionalFee::class;
     }
 
     public function configureFields(string $pageName): iterable
     {
         yield IdField::new('id', 'ID')
             ->onlyOnDetail();
-        yield MoneyField::new('basicRent')
+        yield ChoiceField::new('description')
+            ->setRequired(true)
+            ->setChoices(AdditionalFeeEnum::choices());
+        yield MoneyField::new('feeAmount')
             ->setRequired(true)
             ->setCurrency('CZK')
             ->setStoredAsCents(false);
-        yield CollectionField::new('additionalFees')
-            ->hideOnIndex()
-            ->useEntryCrudForm(AdditionalFeeCrudController::class)
-            ->allowAdd();
-        yield IntegerField::new('maturity')
-            ->setFormTypeOptions([
-                'attr' => [
-                    'min' => 1,
-                    'max' => 28,
-                ],
-            ])
+        yield ChoiceField::new('paymentFrequency')
+            ->setChoices(PaymentFrequencyEnum::choices())
             ->setRequired(true);
-        yield DateField::new('validityFrom');
+        yield BooleanField::new('billable');
         yield DateTimeField::new('createdAt')
             ->hideOnForm();
         yield DateTimeField::new('updatedAt')

@@ -3,7 +3,10 @@
 namespace App\Entity;
 
 use App\Entity\Traits\Timestampable;
+use App\Enum\PaymentFrequencyEnum;
 use App\Repository\RentalRecipeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
@@ -33,6 +36,17 @@ class RentalRecipe
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: false)]
     private \DateTimeImmutable $validityFrom;
 
+    /**
+     * @var Collection<int, AdditionalFee>
+     */
+    #[ORM\OneToMany(targetEntity: AdditionalFee::class, mappedBy: 'rentRecipe', cascade: ['persist'], orphanRemoval: true)]
+    private Collection $additionalFees;
+
+    public function __construct()
+    {
+        $this->additionalFees = new ArrayCollection();
+    }
+
     public function getId(): ?Ulid
     {
         return $this->id;
@@ -48,6 +62,24 @@ class RentalRecipe
         $this->basicRent = $basicRent;
 
         return $this;
+    }
+
+    public function getFullMonthlyRate(): float
+    {
+        $monthlyRate = $this->getBasicRent();
+        foreach ($this->getAdditionalFees() as $additionalFee) {
+            $payment = match ($additionalFee->getPaymentFrequency()) {
+                PaymentFrequencyEnum::ANNUALLY->value => $additionalFee->getFeeAmount() / 12,
+                default => $additionalFee->getFeeAmount(),
+            };
+            $monthlyRate += $payment;
+        }
+
+        if (null === $monthlyRate) {
+            return 0.0;
+        } else {
+            return (float) $monthlyRate;
+        }
     }
 
     public function getMaturity(): ?int
@@ -70,6 +102,36 @@ class RentalRecipe
     public function setValidityFrom(\DateTimeImmutable $validityFrom): static
     {
         $this->validityFrom = $validityFrom;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AdditionalFee>
+     */
+    public function getAdditionalFees(): Collection
+    {
+        return $this->additionalFees;
+    }
+
+    public function addAdditionalFee(AdditionalFee $additionalFee): static
+    {
+        if (!$this->additionalFees->contains($additionalFee)) {
+            $this->additionalFees->add($additionalFee);
+            $additionalFee->setRentRecipe($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAdditionalFee(AdditionalFee $additionalFee): static
+    {
+        if ($this->additionalFees->removeElement($additionalFee)) {
+            // set the owning side to null (unless already changed)
+            if ($additionalFee->getRentRecipe() === $this) {
+                $additionalFee->setRentRecipe(null);
+            }
+        }
 
         return $this;
     }

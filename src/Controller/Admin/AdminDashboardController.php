@@ -2,7 +2,9 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\AdditionalFee;
 use App\Entity\RentalRecipe;
+use App\Repository\RentalRecipeRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -15,10 +17,18 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class AdminDashboardController extends AbstractDashboardController
 {
+    public function __construct(private RentalRecipeRepository $rentalRecipeRepository)
+    {
+    }
+
     #[Route('/admin', name: 'admin')]
     public function index(): Response
     {
-        return $this->render('admin/main_dashboard.html.twig');
+        $rents = $this->rentalRecipeRepository->findAll();
+
+        return $this->render('admin/main_dashboard.html.twig', [
+            'rentalRecipes' => $rents,
+        ]);
     }
 
     public function configureActions(): Actions
@@ -58,6 +68,7 @@ class AdminDashboardController extends AbstractDashboardController
             ->setSubItems(
                 [
                     MenuItem::linkToCrud('Rent recipe', 'fa-solid fa-ticket', RentalRecipe::class),
+                    MenuItem::linkToCrud('Additional fee', 'fa-solid fa-comment-dollar', AdditionalFee::class),
                 ]
             );
     }
