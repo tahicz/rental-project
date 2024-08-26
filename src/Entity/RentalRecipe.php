@@ -27,7 +27,7 @@ class RentalRecipe
 
     #[ORM\Column(nullable: false)]
     #[Assert\Positive()]
-    private int $basicRent;
+    private float $basicRent;
 
     #[ORM\Column(nullable: false)]
     #[Assert\Range(min: 1, max: 28)]
@@ -52,12 +52,12 @@ class RentalRecipe
         return $this->id;
     }
 
-    public function getBasicRent(): ?int
+    public function getBasicRent(): float
     {
         return $this->basicRent;
     }
 
-    public function setBasicRent(int $basicRent): static
+    public function setBasicRent(float $basicRent): static
     {
         $this->basicRent = $basicRent;
 
