@@ -6,7 +6,7 @@
         <div class="accordion-item">
             <h2 class="accordion-header">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
-                    {{ 'Total monthly rent:'|trans }} {{ rent.fullMonthlyRate }}
+                    {{ 'Total monthly rent:'|trans }} {{ rent.fullMonthlyRate|format_currency('CZK') }}
                 </button>
             </h2>
             <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
@@ -21,12 +21,12 @@
                         <tbody>
                         <tr>
                             <th scope="row">{{ 'Basic rent'|trans }}</th>
-                            <td>{{ rent.basicRent }}</td>
+                            <td>{{ rent.basicRent|format_currency('CZK') }}</td>
                         </tr>
                         {% for fee in rent.additionalFees %}
                             <tr>
                                 <th scope="row">{{ fee.description|trans }}</th>
-                                <td>{{ fee.feeAmount }} ({{ fee.paymentFrequency }})</td>
+                                <td>{{ fee.feeAmount|format_currency('CZK') }} ({{ fee.paymentFrequency }})</td>
                             </tr>
                         {% endfor %}
                         </tbody>
