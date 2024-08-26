@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enum\Traits;
 
+use function Symfony\Component\Translation\t;
+
 trait EnumToArray
 {
     /**
@@ -36,5 +38,15 @@ trait EnumToArray
     public static function choices(): array
     {
         return array_combine(self::values(), self::values());
+    }
+
+    public static function translateableChoices(): array
+    {
+        $values = self::values();
+        $values = array_map(function ($value) {
+            return t(static::class.'.'.$value);
+        }, $values);
+
+        return array_combine($values, self::values());
     }
 }

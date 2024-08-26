@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\RentalRecipe;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
@@ -22,11 +23,11 @@ class RentalRecipeCrudController extends AbstractCrudController
     {
         yield IdField::new('id', 'ID')
             ->onlyOnDetail();
-        yield MoneyField::new('basicRent')
+        yield MoneyField::new('basicRent', 'Basic rent')
             ->setRequired(true)
             ->setCurrency('CZK')
             ->setStoredAsCents(false);
-        yield CollectionField::new('additionalFees')
+        yield CollectionField::new('additionalFees', 'Additional fees')
             ->hideOnIndex()
             ->useEntryCrudForm(AdditionalFeeCrudController::class)
             ->allowAdd();
@@ -43,5 +44,15 @@ class RentalRecipeCrudController extends AbstractCrudController
             ->hideOnForm();
         yield DateTimeField::new('updatedAt')
             ->hideOnForm();
+    }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        $crud->setEntityLabelInPlural('Rental recipes')
+            ->setEntityLabelInSingular('Rental recipe')
+            ->setPageTitle(Crud::PAGE_INDEX, '%entity_label_singular% list')
+            ->setPageTitle(Crud::PAGE_DETAIL, '%entity_label_singular% detail');
+
+        return $crud;
     }
 }

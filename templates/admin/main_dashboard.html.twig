@@ -3,37 +3,42 @@
 {% block main %}
     <div class="accordion" id="rentalRecipesFlush">
         {% for rent in rentalRecipes %}
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-rental-{{ rent.id }}" aria-expanded="false" aria-controls="flush-rental-{{ rent.id }}">
-                    {{ 'Total monthly rent:'|trans }} {{ rent.fullMonthlyRate|format_currency('CZK') }}
-                </button>
-            </h2>
-            <div id="flush-rental-{{ rent.id }}" class="accordion-collapse collapse" data-bs-parent="#rentalRecipesFlush">
-                <div class="accordion-body">
-                    <table class="table table-striped">
-                        <thead>
-                        <tr>
-                            <th scope="col">{{ 'Description'|trans }}</th>
-                            <th scope="col">{{ 'Fee amount'|trans }}</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <th scope="row">{{ 'Basic rent'|trans }}</th>
-                            <td>{{ rent.basicRent|format_currency('CZK') }}</td>
-                        </tr>
-                        {% for fee in rent.additionalFees %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#flush-rental-{{ rent.id }}" aria-expanded="false"
+                            aria-controls="flush-rental-{{ rent.id }}">
+                        {{ 'Total monthly rent:'|trans({}, 'estate-rent-admin') }} {{ rent.fullMonthlyRate|format_currency('CZK') }}
+                    </button>
+                </h2>
+                <div id="flush-rental-{{ rent.id }}" class="accordion-collapse collapse"
+                     data-bs-parent="#rentalRecipesFlush">
+                    <div class="accordion-body">
+                        <table class="table table-striped">
+                            <thead>
                             <tr>
-                                <th scope="row">{{ fee.description|trans }}</th>
-                                <td>{{ fee.feeAmount|format_currency('CZK') }} ({{ fee.paymentFrequency }})</td>
+                                <th scope="col">{{ 'Description'|trans({}, 'estate-rent-admin') }}</th>
+                                <th scope="col">{{ 'Fee amount'|trans({}, 'estate-rent-admin') }}</th>
                             </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <th scope="row">{{ 'Basic rent'|trans({}, 'estate-rent-admin') }}</th>
+                                <td>{{ rent.basicRent|format_currency('CZK') }}</td>
+                            </tr>
+                            {% for fee in rent.additionalFees %}
+                                <tr>
+                                    <th scope="row">{{ fee.translatableDescription|trans({}, 'estate-rent-admin') }}</th>
+                                    <td>{{ fee.feeAmount|format_currency('CZK') }}
+                                        ({{ fee.translatablePaymentFrequency|trans({},'estate-rent-admin') }})
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
         {% endfor %}
     </div>
 {% endblock main %}

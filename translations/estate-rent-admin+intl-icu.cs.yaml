@@ -1,0 +1,36 @@
+# Menu
+'Dashboard': 'Přehled'
+'Rental': 'Nájemné'
+# Dashboard
+'Total monthly rent:': 'Celkový měsíční nájem:'
+# AdditionalFeeCrudController
+'Description': 'Popis'
+'Fee amount': 'Poplatek'
+'Payment frequency': 'Platební frekvence'
+'Billable': 'Zúčtovatelné'
+'Additional fee': 'Poplatek'
+'Additional fees': 'Poplatky'
+# RentalRecipeCrudController
+'Basic rent': 'Základní nájem'
+'Rental recipe': 'Předpis nájemného'
+'Rental recipes': 'Předpisy nájemného'
+'Validity From': 'Platné od'
+'Maturity': 'Splatnost dne'
+
+# Entity
+'Created At': 'Vytvořeno'
+'Updated At': 'Upraveno'
+'ID': 'ID'
+
+# CRUD
+'%entity_label_singular% list': '{entity_label_singular} - výpis'
+'%entity_label_singular% detail': '{entity_label_singular} - detail'
+
+# Enums
+'App\Enum\AdditionalFeeEnum.municipal-waste': 'komunální odpad'
+'App\Enum\AdditionalFeeEnum.water-and-sewage': 'vodné, stočné'
+'App\Enum\AdditionalFeeEnum.aqueous': 'vodné'
+'App\Enum\AdditionalFeeEnum.electricity': 'elektřina'
+'App\Enum\AdditionalFeeEnum.gas': 'plyn'
+'App\Enum\PaymentFrequencyEnum.monthly': 'měsíčně'
+'App\Enum\PaymentFrequencyEnum.annually': 'ročně'
