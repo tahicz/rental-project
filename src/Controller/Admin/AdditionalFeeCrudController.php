@@ -26,13 +26,14 @@ class AdditionalFeeCrudController extends AbstractCrudController
             ->onlyOnDetail();
         yield ChoiceField::new('description')
             ->setRequired(true)
-            ->setChoices(AdditionalFeeEnum::choices());
-        yield MoneyField::new('feeAmount')
+            ->setChoices(AdditionalFeeEnum::translateableChoices())
+        ;
+        yield MoneyField::new('feeAmount', 'Fee amount')
             ->setRequired(true)
             ->setCurrency('CZK')
             ->setStoredAsCents(false);
-        yield ChoiceField::new('paymentFrequency')
-            ->setChoices(PaymentFrequencyEnum::choices())
+        yield ChoiceField::new('paymentFrequency', 'Payment frequency')
+            ->setChoices(PaymentFrequencyEnum::translateableChoices())
             ->setRequired(true);
         yield BooleanField::new('billable')
             ->renderAsSwitch(in_array($pageName, [Crud::PAGE_NEW, Crud::PAGE_EDIT], true));
@@ -41,4 +42,13 @@ class AdditionalFeeCrudController extends AbstractCrudController
         yield DateTimeField::new('updatedAt')
             ->hideOnForm();
     }
+
+	public function configureCrud(Crud $crud): Crud
+	{
+		$crud->setEntityLabelInPlural('Additional fees')
+			->setEntityLabelInSingular('Additional fee')
+			->setPageTitle(Crud::PAGE_INDEX, '%entity_label_singular% list')
+			->setPageTitle(Crud::PAGE_DETAIL, '%entity_label_singular% detail');
+		return $crud;
+	}
 }

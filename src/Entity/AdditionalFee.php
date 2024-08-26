@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Entity\Traits\Timestampable;
+use App\Enum\AdditionalFeeEnum;
+use App\Enum\PaymentFrequencyEnum;
 use App\Repository\AdditionalFeeRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
@@ -46,6 +48,11 @@ class AdditionalFee
         return $this->description;
     }
 
+    public function getTranslatableDescription(): string
+    {
+        return AdditionalFeeEnum::class.'.'.$this->description;
+    }
+
     public function setDescription(string $description): static
     {
         $this->description = $description;
@@ -68,6 +75,11 @@ class AdditionalFee
     public function getPaymentFrequency(): string
     {
         return $this->paymentFrequency;
+    }
+
+    public function getTranslatablePaymentFrequency(): string
+    {
+        return PaymentFrequencyEnum::class.'.'.$this->paymentFrequency;
     }
 
     public function setPaymentFrequency(string $paymentFrequency): static

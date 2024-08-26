@@ -67,7 +67,7 @@ class AdminDashboardController extends AbstractDashboardController
         yield MenuItem::subMenu('Rental', 'fa-solid fa-sign-hanging')
             ->setSubItems(
                 [
-                    MenuItem::linkToCrud('Rent recipe', 'fa-solid fa-ticket', RentalRecipe::class),
+                    MenuItem::linkToCrud('Rental recipe', 'fa-solid fa-ticket', RentalRecipe::class),
                     MenuItem::linkToCrud('Additional fee', 'fa-solid fa-comment-dollar', AdditionalFee::class),
                 ]
             );
