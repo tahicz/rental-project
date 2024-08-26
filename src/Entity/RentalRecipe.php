@@ -75,11 +75,7 @@ class RentalRecipe
             $monthlyRate += $payment;
         }
 
-        if (null === $monthlyRate) {
-            return 0.0;
-        } else {
-            return (float) $monthlyRate;
-        }
+        return $monthlyRate;
     }
 
     public function getMaturity(): ?int
