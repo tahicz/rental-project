@@ -43,7 +43,7 @@ class AdminDashboardController extends AbstractDashboardController
     {
         return Dashboard::new()
             ->setTitle('EstateRent')
-            ->setFaviconPath('favicon.svg')
+            ->setFaviconPath('favicon.ico')
             ->setTranslationDomain('estate-rent-admin')
             ->setTextDirection('ltr')
             ->renderContentMaximized()
