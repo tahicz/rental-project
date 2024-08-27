@@ -26,14 +26,14 @@ class AdditionalFeeCrudController extends AbstractCrudController
             ->onlyOnDetail();
         yield ChoiceField::new('description')
             ->setRequired(true)
-            ->setChoices(AdditionalFeeEnum::translateableChoices())
+            ->setChoices(AdditionalFeeEnum::translateAbleChoices())
         ;
         yield MoneyField::new('feeAmount', 'Fee amount')
             ->setRequired(true)
             ->setCurrency('CZK')
             ->setStoredAsCents(false);
         yield ChoiceField::new('paymentFrequency', 'Payment frequency')
-            ->setChoices(PaymentFrequencyEnum::translateableChoices())
+            ->setChoices(PaymentFrequencyEnum::translateAbleChoices())
             ->setRequired(true);
         yield BooleanField::new('billable')
             ->renderAsSwitch(in_array($pageName, [Crud::PAGE_NEW, Crud::PAGE_EDIT], true));
