@@ -13,7 +13,7 @@ class RentalRecipeFixtures extends Fixture
     public function load(ObjectManager $manager): void
     {
         $rentRecipe = new RentalRecipe();
-        $rentRecipe->setBasicRent(10441.67)
+        $rentRecipe->setBasicRent(10_441.67)
             ->setMaturity(25)
             ->setValidityFrom(new \DateTimeImmutable('2020-05-20'));
 

@@ -43,12 +43,13 @@ class AdditionalFeeCrudController extends AbstractCrudController
             ->hideOnForm();
     }
 
-	public function configureCrud(Crud $crud): Crud
-	{
-		$crud->setEntityLabelInPlural('Additional fees')
-			->setEntityLabelInSingular('Additional fee')
-			->setPageTitle(Crud::PAGE_INDEX, '%entity_label_singular% list')
-			->setPageTitle(Crud::PAGE_DETAIL, '%entity_label_singular% detail');
-		return $crud;
-	}
+    public function configureCrud(Crud $crud): Crud
+    {
+        $crud->setEntityLabelInPlural('Additional fees')
+            ->setEntityLabelInSingular('Additional fee')
+            ->setPageTitle(Crud::PAGE_INDEX, '%entity_label_singular% list')
+            ->setPageTitle(Crud::PAGE_DETAIL, '%entity_label_singular% detail');
+
+        return $crud;
+    }
 }
