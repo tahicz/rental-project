@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Payment;
 use App\Enum\SystemEnum;
+use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
@@ -30,7 +31,7 @@ class PaymentCrudController extends AbstractCrudController
             ->hideOnForm();
         yield DateField::new('maturityDate', 'Maturity date');
         yield DateField::new('paymentDate', 'Payment date')
-        ->hideWhenCreating();
+            ->hideWhenCreating();
         yield AssociationField::new('rentalRecipe', 'Rental recipe')
             ->hideOnIndex();
         yield DateTimeField::new('createdAt')
@@ -47,5 +48,41 @@ class PaymentCrudController extends AbstractCrudController
             ->setPageTitle(Crud::PAGE_DETAIL, '%entity_label_singular% detail');
 
         return $crud;
+    }
+
+    /**
+     * @param Payment $entityInstance
+     */
+    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if (!$entityInstance instanceof Payment) {
+            throw new \RuntimeException('Expected instance of Payment, got '.get_class($entityInstance));
+        }
+
+        $this->setPaymentAmount($entityInstance);
+        parent::persistEntity($entityManager, $entityInstance);
+    }
+
+    private function setPaymentAmount(Payment $payment): void
+    {
+        if (null === $payment->getRentalRecipe()) {
+            $amount = 0.0;
+        } else {
+            $amount = $payment->getRentalRecipe()->getFullMonthlyRate();
+        }
+        $payment->setAmount($amount);
+    }
+
+    /**
+     * @param Payment $entityInstance
+     */
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if (!$entityInstance instanceof Payment) {
+            throw new \RuntimeException('Expected instance of Payment, got '.get_class($entityInstance));
+        }
+
+        $this->setPaymentAmount($entityInstance);
+        parent::updateEntity($entityManager, $entityInstance);
     }
 }
