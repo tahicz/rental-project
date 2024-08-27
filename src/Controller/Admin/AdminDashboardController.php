@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\AdditionalFee;
 use App\Entity\Payment;
 use App\Entity\RentalRecipe;
+use App\Repository\PaymentRepository;
 use App\Repository\RentalRecipeRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -18,8 +19,10 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class AdminDashboardController extends AbstractDashboardController
 {
-    public function __construct(private RentalRecipeRepository $rentalRecipeRepository)
-    {
+    public function __construct(
+        private readonly RentalRecipeRepository $rentalRecipeRepository,
+        private readonly PaymentRepository $paymentRepository,
+    ) {
     }
 
     #[Route('/admin', name: 'admin')]
@@ -27,8 +30,19 @@ class AdminDashboardController extends AbstractDashboardController
     {
         $rents = $this->rentalRecipeRepository->findAll();
 
+        $paymentsDueSum = $this->paymentRepository->getPaymentsDueSum();
+        $paymentsDueCount = $this->paymentRepository->getPaymentsDueCount();
+        $paymentsActuallyMadeSum = $this->paymentRepository->getPaymentsActuallyMadeSum();
+        $paymentsActuallyMadeCount = $this->paymentRepository->getPaymentsActuallyMadeCount();
+
         return $this->render('admin/main_dashboard.html.twig', [
             'rentalRecipes' => $rents,
+            'payments' => [
+                'dueSum' => $paymentsDueSum,
+                'dueCount' => $paymentsDueCount,
+                'actuallyMadeSum' => $paymentsActuallyMadeSum,
+                'actuallyMadeCount' => $paymentsActuallyMadeCount,
+            ],
         ]);
     }
 

@@ -16,28 +16,45 @@ class PaymentRepository extends ServiceEntityRepository
         parent::__construct($registry, Payment::class);
     }
 
-    //    /**
-    //     * @return Payment[] Returns an array of Payment objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function getPaymentsDueSum(): float
+    {
+        return (float) $this->createQueryBuilder('p')
+            ->select('SUM(p.amount)')
+            ->where('p.maturityDate <= :now')
+            ->setParameter('now', new \DateTime('now'))
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Payment
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function getPaymentsDueCount(): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p)')
+            ->where('p.maturityDate <= :now')
+            ->setParameter('now', new \DateTime('now'))
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function getPaymentsActuallyMadeSum(): float
+    {
+        return (float) $this->createQueryBuilder('p')
+            ->select('SUM(p.amount)')
+            ->where('p.maturityDate <= :now')
+            ->andWhere('p.paymentDate is not null')
+            ->setParameter('now', new \DateTime('now'))
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function getPaymentsActuallyMadeCount(): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p)')
+            ->where('p.maturityDate <= :now')
+            ->andWhere('p.paymentDate is not null')
+            ->setParameter('now', new \DateTime('now'))
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

@@ -1,44 +1,80 @@
 {% extends '@EasyAdmin/layout.html.twig' %}
 
 {% block main %}
-    <div class="accordion" id="rentalRecipesFlush">
-        {% for rent in rentalRecipes %}
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#flush-rental-{{ rent.id }}" aria-expanded="false"
-                            aria-controls="flush-rental-{{ rent.id }}">
-                        {{ 'Total monthly rent:'|trans({}, 'estate-rent-admin') }} {{ rent.fullMonthlyRate|format_currency('CZK') }}
-                    </button>
-                </h2>
-                <div id="flush-rental-{{ rent.id }}" class="accordion-collapse collapse"
-                     data-bs-parent="#rentalRecipesFlush">
-                    <div class="accordion-body">
-                        <table class="table table-striped">
-                            <thead>
-                            <tr>
-                                <th scope="col">{{ 'Description'|trans({}, 'estate-rent-admin') }}</th>
-                                <th scope="col">{{ 'Fee amount'|trans({}, 'estate-rent-admin') }}</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <th scope="row">{{ 'Basic rent'|trans({}, 'estate-rent-admin') }}</th>
-                                <td>{{ rent.basicRent|format_currency('CZK') }}</td>
-                            </tr>
-                            {% for fee in rent.additionalFees %}
-                                <tr>
-                                    <th scope="row">{{ fee.translatableDescription|trans({}, 'estate-rent-admin') }}</th>
-                                    <td>{{ fee.feeAmount|format_currency('CZK') }}
-                                        ({{ fee.translatablePaymentFrequency|trans({},'estate-rent-admin') }})
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
+
+
+    <div class="card">
+        <div class="card-header">
+            {{ 'Statistics'|trans({}, 'estate-rent-admin')  }}
+        </div>
+        <div class="card-body">
+            <div class="accordion" id="rentalRecipesFlush">
+                {% for rent in rentalRecipes %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#flush-rental-{{ rent.id }}" aria-expanded="false"
+                                    aria-controls="flush-rental-{{ rent.id }}">
+                                {{ 'Total monthly rent:'|trans({}, 'estate-rent-admin') }} {{ rent.fullMonthlyRate|format_currency('CZK') }}
+                            </button>
+                        </h2>
+                        <div id="flush-rental-{{ rent.id }}" class="accordion-collapse collapse"
+                             data-bs-parent="#rentalRecipesFlush">
+                            <div class="accordion-body">
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">{{ 'Description'|trans({}, 'estate-rent-admin') }}</th>
+                                        <th scope="col">{{ 'Fee amount'|trans({}, 'estate-rent-admin') }}</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <th scope="row">{{ 'Basic rent'|trans({}, 'estate-rent-admin') }}</th>
+                                        <td>{{ rent.basicRent|format_currency('CZK') }}</td>
+                                    </tr>
+                                    {% for fee in rent.additionalFees %}
+                                        <tr>
+                                            <th scope="row">{{ fee.translatableDescription|trans({}, 'estate-rent-admin') }}</th>
+                                            <td>{{ fee.feeAmount|format_currency('CZK') }}
+                                                ({{ fee.translatablePaymentFrequency|trans({},'estate-rent-admin') }})
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                {% endfor %}
             </div>
-        {% endfor %}
+
+            <table class="table table-striped mt-3">
+                <thead>
+                <tr>
+                    <th scope="col">{{ 'Description'|trans({}, 'estate-rent-admin') }}</th>
+                    <th scope="col">{{ 'Data'|trans({}, 'estate-rent-admin') }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th scope="row">{{ 'Payments due sum'|trans({}, 'estate-rent-admin') }}</th>
+                    <td>{{ payments.dueSum|format_currency('CZK') }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">{{ 'Payments due count'|trans({}, 'estate-rent-admin') }}</th>
+                    <td>{{ payments.dueCount }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">{{ 'Actually made payments sum'|trans({}, 'estate-rent-admin') }}</th>
+                    <td>{{ payments.actuallyMadeSum|format_currency('CZK') }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">{{ 'Actually made payments count'|trans({}, 'estate-rent-admin') }}</th>
+                    <td>{{ payments.actuallyMadeCount }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 {% endblock main %}
