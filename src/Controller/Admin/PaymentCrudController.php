@@ -2,45 +2,37 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\RentalRecipe;
+use App\Entity\Payment;
 use App\Enum\SystemEnum;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 
-class RentalRecipeCrudController extends AbstractCrudController
+class PaymentCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
-        return RentalRecipe::class;
+        return Payment::class;
     }
 
     public function configureFields(string $pageName): iterable
     {
         yield IdField::new('id', 'ID')
             ->onlyOnDetail();
-        yield MoneyField::new('basicRent', 'Basic rent')
-            ->setRequired(true)
+        yield MoneyField::new('amount')
             ->setCurrency(SystemEnum::CURRENCY->value)
-            ->setStoredAsCents(false);
-        yield CollectionField::new('additionalFees', 'Additional fees')
-            ->hideOnIndex()
-            ->useEntryCrudForm(AdditionalFeeCrudController::class)
-            ->allowAdd();
-        yield IntegerField::new('maturity')
-            ->setFormTypeOptions([
-                'attr' => [
-                    'min' => 1,
-                    'max' => 28,
-                ],
-            ])
-            ->setRequired(true);
-        yield DateField::new('validityFrom');
+            ->setRequired(true)
+            ->setStoredAsCents(false)
+            ->hideOnForm();
+        yield DateField::new('maturityDate', 'Maturity date');
+        yield DateField::new('paymentDate', 'Payment date')
+        ->hideWhenCreating();
+        yield AssociationField::new('rentalRecipe', 'Rental recipe')
+            ->hideOnIndex();
         yield DateTimeField::new('createdAt')
             ->hideOnForm();
         yield DateTimeField::new('updatedAt')
@@ -49,8 +41,8 @@ class RentalRecipeCrudController extends AbstractCrudController
 
     public function configureCrud(Crud $crud): Crud
     {
-        $crud->setEntityLabelInPlural('Rental recipes')
-            ->setEntityLabelInSingular('Rental recipe')
+        $crud->setEntityLabelInPlural('Payments')
+            ->setEntityLabelInSingular('Payment')
             ->setPageTitle(Crud::PAGE_INDEX, '%entity_label_singular% list')
             ->setPageTitle(Crud::PAGE_DETAIL, '%entity_label_singular% detail');
 

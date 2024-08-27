@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\AdditionalFee;
+use App\Entity\Payment;
 use App\Entity\RentalRecipe;
 use App\Repository\RentalRecipeRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -69,6 +70,12 @@ class AdminDashboardController extends AbstractDashboardController
                 [
                     MenuItem::linkToCrud('Rental recipe', 'fa-solid fa-ticket', RentalRecipe::class),
                     MenuItem::linkToCrud('Additional fee', 'fa-solid fa-comment-dollar', AdditionalFee::class),
+                ]
+            );
+        yield MenuItem::subMenu('Finance', 'fa-solid fa-magnifying-glass-dollar')
+            ->setSubItems(
+                [
+                    MenuItem::linkToCrud('Payments', 'fa-solid fa-wallet', Payment::class),
                 ]
             );
     }

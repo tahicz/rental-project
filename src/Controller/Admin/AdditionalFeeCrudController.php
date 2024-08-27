@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\AdditionalFee;
 use App\Enum\AdditionalFeeEnum;
 use App\Enum\PaymentFrequencyEnum;
+use App\Enum\SystemEnum;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
@@ -30,7 +31,7 @@ class AdditionalFeeCrudController extends AbstractCrudController
         ;
         yield MoneyField::new('feeAmount', 'Fee amount')
             ->setRequired(true)
-            ->setCurrency('CZK')
+            ->setCurrency(SystemEnum::CURRENCY->value)
             ->setStoredAsCents(false);
         yield ChoiceField::new('paymentFrequency', 'Payment frequency')
             ->setChoices(PaymentFrequencyEnum::translateAbleChoices())

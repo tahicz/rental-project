@@ -1,6 +1,7 @@
 # Menu
 'Dashboard': 'Přehled'
 'Rental': 'Nájemné'
+'Finance': 'Finance'
 # Dashboard
 'Total monthly rent:': 'Celkový měsíční nájem:'
 # AdditionalFeeCrudController
@@ -16,6 +17,12 @@
 'Rental recipes': 'Předpisy nájemného'
 'Validity From': 'Platné od'
 'Maturity': 'Splatnost dne'
+# PaymentyCrudController
+'Payments': 'Platby'
+'Payment': 'Platba'
+'Amount': 'Částka'
+'Maturity date': 'Datum splatnosti'
+'Payment date': 'Datum platby'
 
 # Entity
 'Created At': 'Vytvořeno'
