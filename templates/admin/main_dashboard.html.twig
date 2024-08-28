@@ -73,6 +73,10 @@
                     <th scope="row">{{ 'Actually made payments count'|trans({}, 'estate-rent-admin') }}</th>
                     <td>{{ payments.actuallyMadeCount }}</td>
                 </tr>
+                <tr>
+                    <th scope="row">{{ 'Next due'|trans({}, 'estate-rent-admin') }}</th>
+                    <td>{{ payments.nextDue.maturityDate|date('d. m. Y') }}</td>
+                </tr>
                 </tbody>
             </table>
         </div>

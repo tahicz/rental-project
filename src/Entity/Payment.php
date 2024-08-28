@@ -27,13 +27,16 @@ class Payment
     private ?RentalRecipe $rentalRecipe = null;
 
     #[ORM\Column(nullable: false)]
-    private float $amount;
+    private float $payableAmount;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $paymentDate = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: false)]
     private \DateTimeImmutable $maturityDate;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $paidAmount = null;
 
     public function getId(): ?Ulid
     {
@@ -52,14 +55,14 @@ class Payment
         return $this;
     }
 
-    public function getAmount(): float
+    public function getPayableAmount(): float
     {
-        return $this->amount;
+        return $this->payableAmount;
     }
 
-    public function setAmount(float $amount): static
+    public function setPayableAmount(float $payableAmount): static
     {
-        $this->amount = $amount;
+        $this->payableAmount = $payableAmount;
 
         return $this;
     }
@@ -84,6 +87,18 @@ class Payment
     public function setMaturityDate(\DateTimeImmutable $maturityDate): static
     {
         $this->maturityDate = $maturityDate;
+
+        return $this;
+    }
+
+    public function getPaidAmount(): ?float
+    {
+        return $this->paidAmount;
+    }
+
+    public function setPaidAmount(?float $paidAmount): static
+    {
+        $this->paidAmount = $paidAmount;
 
         return $this;
     }

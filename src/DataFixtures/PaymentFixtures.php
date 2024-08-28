@@ -18,7 +18,7 @@ class PaymentFixtures extends Fixture implements DependentFixtureInterface
             ->modify('+'.($rentalRecipe->getMaturity() - 1).' day');
         while ($paymentDate < new \DateTime('today +12months')) {
             $payment = new Payment();
-            $payment->setAmount($rentalRecipe->getFullMonthlyRate())
+            $payment->setPayableAmount($rentalRecipe->getFullMonthlyRate())
                 ->setMaturityDate(\DateTimeImmutable::createFromMutable($paymentDate))
                 ->setRentalRecipe($rentalRecipe)
             ;

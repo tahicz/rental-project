@@ -10,6 +10,7 @@
 'Payments due count': 'Počet platebních poviností'
 'Actually made payments sum': 'Suma uskutečněných plateb'
 'Actually made payments count': 'Počet uskutečněných plateb'
+'Next due': 'Následující platba'
 # AdditionalFeeCrudController
 'Description': 'Popis'
 'Fee amount': 'Poplatek'
@@ -26,7 +27,8 @@
 # PaymentyCrudController
 'Payments': 'Platby'
 'Payment': 'Platba'
-'Amount': 'Částka'
+'Payable amount': 'Částka k zaplacení'
+'Paid amount': 'Zaplacená částka'
 'Maturity date': 'Datum splatnosti'
 'Payment date': 'Datum platby'
 

@@ -28,12 +28,15 @@ class AdminDashboardController extends AbstractDashboardController
     #[Route('/admin', name: 'admin')]
     public function index(): Response
     {
+        $today = new \DateTimeImmutable('today');
+
         $rents = $this->rentalRecipeRepository->findAll();
 
-        $paymentsDueSum = $this->paymentRepository->getPaymentsDueSum();
-        $paymentsDueCount = $this->paymentRepository->getPaymentsDueCount();
-        $paymentsActuallyMadeSum = $this->paymentRepository->getPaymentsActuallyMadeSum();
-        $paymentsActuallyMadeCount = $this->paymentRepository->getPaymentsActuallyMadeCount();
+        $paymentsDueSum = $this->paymentRepository->getPaymentsDueSum($today);
+        $paymentsDueCount = $this->paymentRepository->getPaymentsDueCount($today);
+        $paymentsActuallyMadeSum = $this->paymentRepository->getPaymentsActuallyMadeSum($today);
+        $paymentsActuallyMadeCount = $this->paymentRepository->getPaymentsActuallyMadeCount($today);
+        $nextDue = $this->paymentRepository->getNextPaymentDue($today);
 
         return $this->render('admin/main_dashboard.html.twig', [
             'rentalRecipes' => $rents,
@@ -42,6 +45,7 @@ class AdminDashboardController extends AbstractDashboardController
                 'dueCount' => $paymentsDueCount,
                 'actuallyMadeSum' => $paymentsActuallyMadeSum,
                 'actuallyMadeCount' => $paymentsActuallyMadeCount,
+                'nextDue' => $nextDue,
             ],
         ]);
     }

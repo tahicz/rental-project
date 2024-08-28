@@ -24,12 +24,15 @@ class PaymentCrudController extends AbstractCrudController
     {
         yield IdField::new('id', 'ID')
             ->onlyOnDetail();
-        yield MoneyField::new('amount')
+        yield MoneyField::new('payableAmount', 'Payable amount')
             ->setCurrency(SystemEnum::CURRENCY->value)
             ->setRequired(true)
             ->setStoredAsCents(false)
             ->hideOnForm();
         yield DateField::new('maturityDate', 'Maturity date');
+        yield MoneyField::new('paidAmount', 'Paid amount')
+            ->setCurrency(SystemEnum::CURRENCY->value)
+            ->setStoredAsCents(false);
         yield DateField::new('paymentDate', 'Payment date')
             ->hideWhenCreating();
         yield AssociationField::new('rentalRecipe', 'Rental recipe')
@@ -70,7 +73,7 @@ class PaymentCrudController extends AbstractCrudController
         } else {
             $amount = $payment->getRentalRecipe()->getFullMonthlyRate();
         }
-        $payment->setAmount($amount);
+        $payment->setPayableAmount($amount);
     }
 
     /**
