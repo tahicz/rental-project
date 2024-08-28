@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Entity\Traits\Timestampable;
 use App\Repository\PaymentRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -37,6 +39,17 @@ class PaymentRecipe
 
     #[ORM\Column(nullable: true)]
     private ?float $paidAmount = null;
+
+    /**
+     * @var Collection<int, PaymentRecord>
+     */
+    #[ORM\OneToMany(targetEntity: PaymentRecord::class, mappedBy: 'payment', orphanRemoval: true)]
+    private Collection $paymentRecords;
+
+    public function __construct()
+    {
+        $this->paymentRecords = new ArrayCollection();
+    }
 
     public function getId(): ?Ulid
     {
@@ -99,6 +112,36 @@ class PaymentRecipe
     public function setPaidAmount(?float $paidAmount): static
     {
         $this->paidAmount = $paidAmount;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PaymentRecord>
+     */
+    public function getPaymentRecords(): Collection
+    {
+        return $this->paymentRecords;
+    }
+
+    public function addPaymentRecord(PaymentRecord $paymentRecord): static
+    {
+        if (!$this->paymentRecords->contains($paymentRecord)) {
+            $this->paymentRecords->add($paymentRecord);
+            $paymentRecord->setPayment($this);
+        }
+
+        return $this;
+    }
+
+    public function removePaymentRecord(PaymentRecord $paymentRecord): static
+    {
+        if ($this->paymentRecords->removeElement($paymentRecord)) {
+            // set the owning side to null (unless already changed)
+            if ($paymentRecord->getPayment() === $this) {
+                $paymentRecord->setPayment(null);
+            }
+        }
 
         return $this;
     }
