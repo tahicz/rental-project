@@ -2,18 +2,18 @@
 
 namespace App\Repository;
 
-use App\Entity\Payment;
+use App\Entity\PaymentRecipe;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Payment>
+ * @extends ServiceEntityRepository<PaymentRecipe>
  */
 class PaymentRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Payment::class);
+        parent::__construct($registry, PaymentRecipe::class);
     }
 
     public function getPaymentsDueSum(\DateTimeInterface $now): float
@@ -58,7 +58,7 @@ class PaymentRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    public function getNextPaymentDue(\DateTimeInterface $now): ?Payment
+    public function getNextPaymentDue(\DateTimeInterface $now): ?PaymentRecipe
     {
         $result = $this->createQueryBuilder('p')
             ->select('p')
@@ -69,20 +69,20 @@ class PaymentRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
 
-        if ($result instanceof Payment) {
+        if ($result instanceof PaymentRecipe) {
             return $result;
         } else {
             return null;
         }
     }
 
-    public function save(Payment $payment): void
+    public function save(PaymentRecipe $payment): void
     {
         $this->persist($payment);
         $this->flush();
     }
 
-    public function persist(Payment $payment): void
+    public function persist(PaymentRecipe $payment): void
     {
         $this->getEntityManager()->persist($payment);
     }

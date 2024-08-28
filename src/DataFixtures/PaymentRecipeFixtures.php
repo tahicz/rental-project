@@ -2,13 +2,13 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Payment;
+use App\Entity\PaymentRecipe;
 use App\Entity\RentalRecipe;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
-class PaymentFixtures extends Fixture implements DependentFixtureInterface
+class PaymentRecipeFixtures extends Fixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
@@ -17,7 +17,7 @@ class PaymentFixtures extends Fixture implements DependentFixtureInterface
         $paymentDate->modify('first day of this month')
             ->modify('+'.($rentalRecipe->getMaturity() - 1).' day');
         while ($paymentDate < new \DateTime('today +12months')) {
-            $payment = new Payment();
+            $payment = new PaymentRecipe();
             $payment->setPayableAmount($rentalRecipe->getFullMonthlyRate())
                 ->setMaturityDate(\DateTimeImmutable::createFromMutable($paymentDate))
                 ->setRentalRecipe($rentalRecipe)

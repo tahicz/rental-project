@@ -10,9 +10,9 @@ use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
 #[ORM\Entity(repositoryClass: PaymentRepository::class)]
-#[ORM\Table(name: 'payment')]
+#[ORM\Table(name: 'payment_recipe')]
 #[ORM\HasLifecycleCallbacks]
-class Payment
+class PaymentRecipe
 {
     use Timestampable;
 

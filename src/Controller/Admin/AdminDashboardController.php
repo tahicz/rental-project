@@ -3,7 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\AdditionalFee;
-use App\Entity\Payment;
+use App\Entity\PaymentRecipe;
 use App\Entity\RentalRecipe;
 use App\Repository\PaymentRepository;
 use App\Repository\RentalRecipeRepository;
@@ -93,7 +93,7 @@ class AdminDashboardController extends AbstractDashboardController
         yield MenuItem::subMenu('Finance', 'fa-solid fa-magnifying-glass-dollar')
             ->setSubItems(
                 [
-                    MenuItem::linkToCrud('Payments', 'fa-solid fa-wallet', Payment::class),
+                    MenuItem::linkToCrud('Payments', 'fa-solid fa-wallet', PaymentRecipe::class),
                 ]
             );
     }
