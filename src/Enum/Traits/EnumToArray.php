@@ -40,7 +40,10 @@ trait EnumToArray
         return array_combine(self::values(), self::values());
     }
 
-    public static function translateableChoices(): array
+    /**
+     * @return array<int|string, int|string>
+     */
+    public static function translateAbleChoices(): array
     {
         $values = self::values();
         $values = array_map(function ($value) {

@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\AdditionalFee;
 use App\Enum\AdditionalFeeEnum;
 use App\Enum\PaymentFrequencyEnum;
+use App\Enum\SystemEnum;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
@@ -26,14 +27,14 @@ class AdditionalFeeCrudController extends AbstractCrudController
             ->onlyOnDetail();
         yield ChoiceField::new('description')
             ->setRequired(true)
-            ->setChoices(AdditionalFeeEnum::translateableChoices())
+            ->setChoices(AdditionalFeeEnum::translateAbleChoices())
         ;
         yield MoneyField::new('feeAmount', 'Fee amount')
             ->setRequired(true)
-            ->setCurrency('CZK')
+            ->setCurrency(SystemEnum::CURRENCY->value)
             ->setStoredAsCents(false);
         yield ChoiceField::new('paymentFrequency', 'Payment frequency')
-            ->setChoices(PaymentFrequencyEnum::translateableChoices())
+            ->setChoices(PaymentFrequencyEnum::translateAbleChoices())
             ->setRequired(true);
         yield BooleanField::new('billable')
             ->renderAsSwitch(in_array($pageName, [Crud::PAGE_NEW, Crud::PAGE_EDIT], true));
@@ -43,12 +44,13 @@ class AdditionalFeeCrudController extends AbstractCrudController
             ->hideOnForm();
     }
 
-	public function configureCrud(Crud $crud): Crud
-	{
-		$crud->setEntityLabelInPlural('Additional fees')
-			->setEntityLabelInSingular('Additional fee')
-			->setPageTitle(Crud::PAGE_INDEX, '%entity_label_singular% list')
-			->setPageTitle(Crud::PAGE_DETAIL, '%entity_label_singular% detail');
-		return $crud;
-	}
+    public function configureCrud(Crud $crud): Crud
+    {
+        $crud->setEntityLabelInPlural('Additional fees')
+            ->setEntityLabelInSingular('Additional fee')
+            ->setPageTitle(Crud::PAGE_INDEX, '%entity_label_singular% list')
+            ->setPageTitle(Crud::PAGE_DETAIL, '%entity_label_singular% detail');
+
+        return $crud;
+    }
 }

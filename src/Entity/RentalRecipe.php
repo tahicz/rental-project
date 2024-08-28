@@ -42,9 +42,16 @@ class RentalRecipe
     #[ORM\OneToMany(targetEntity: AdditionalFee::class, mappedBy: 'rentRecipe', cascade: ['persist'], orphanRemoval: true)]
     private Collection $additionalFees;
 
+    /**
+     * @var Collection<int, Payment>
+     */
+    #[ORM\OneToMany(targetEntity: Payment::class, mappedBy: 'rentalRecipe')]
+    private Collection $payments;
+
     public function __construct()
     {
         $this->additionalFees = new ArrayCollection();
+        $this->payments = new ArrayCollection();
     }
 
     public function getId(): ?Ulid
@@ -90,7 +97,7 @@ class RentalRecipe
         return $this;
     }
 
-    public function getValidityFrom(): ?\DateTimeImmutable
+    public function getValidityFrom(): \DateTimeImmutable
     {
         return $this->validityFrom;
     }
@@ -130,5 +137,40 @@ class RentalRecipe
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Payment>
+     */
+    public function getPayments(): Collection
+    {
+        return $this->payments;
+    }
+
+    public function addPayment(Payment $payment): static
+    {
+        if (!$this->payments->contains($payment)) {
+            $this->payments->add($payment);
+            $payment->setRentalRecipe($this);
+        }
+
+        return $this;
+    }
+
+    public function removePayment(Payment $payment): static
+    {
+        if ($this->payments->removeElement($payment)) {
+            // set the owning side to null (unless already changed)
+            if ($payment->getRentalRecipe() === $this) {
+                $payment->setRentalRecipe(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->id;
     }
 }
