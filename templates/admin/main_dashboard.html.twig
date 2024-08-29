@@ -5,7 +5,7 @@
 
     <div class="card">
         <div class="card-header">
-            {{ 'Statistics'|trans({}, 'estate-rent-admin')  }}
+            {{ 'Statistics'|trans({}, 'estate-rent-admin') }}
         </div>
         <div class="card-body">
             <div class="accordion" id="rentalRecipesFlush">
@@ -75,7 +75,15 @@
                 </tr>
                 <tr>
                     <th scope="row">{{ 'Next due'|trans({}, 'estate-rent-admin') }}</th>
-                    <td>{{ payments.nextDue.maturityDate|date('d. m. Y') }}</td>
+                    <td>
+                        {% if payments.nextDue is null %}
+                            {{ 'Next payment due is not generated.'|trans({}, 'estate-rent-admin') }}
+                            <a class="btn btn-info ms-1" href="{{ payments.generateNextUrl }}" role="button">{{ 'Generate payments recipes'|trans({}, 'estate-rent-admin') }}</a>
+
+                        {% else %}
+                            {{ payments.nextDue.maturityDate|date('d. m. Y') }}
+                        {% endif %}
+                    </td>
                 </tr>
                 </tbody>
             </table>

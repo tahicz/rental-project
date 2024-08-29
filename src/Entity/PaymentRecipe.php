@@ -37,13 +37,13 @@ class PaymentRecipe
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: false)]
     private \DateTimeImmutable $maturityDate;
 
-    #[ORM\Column(nullable: true)]
-    private ?float $paidAmount = null;
+    #[ORM\Column(nullable: true, options: ['default' => 0.0])]
+    private float $paidAmount = 0.0;
 
     /**
      * @var Collection<int, PaymentRecord>
      */
-    #[ORM\OneToMany(targetEntity: PaymentRecord::class, mappedBy: 'payment', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: PaymentRecord::class, mappedBy: 'paymentRecipe', orphanRemoval: true)]
     private Collection $paymentRecords;
 
     public function __construct()
@@ -68,18 +68,6 @@ class PaymentRecipe
         return $this;
     }
 
-    public function getPayableAmount(): float
-    {
-        return $this->payableAmount;
-    }
-
-    public function setPayableAmount(float $payableAmount): static
-    {
-        $this->payableAmount = $payableAmount;
-
-        return $this;
-    }
-
     public function getPaymentDate(): ?\DateTimeImmutable
     {
         return $this->paymentDate;
@@ -92,24 +80,12 @@ class PaymentRecipe
         return $this;
     }
 
-    public function getMaturityDate(): \DateTimeImmutable
-    {
-        return $this->maturityDate;
-    }
-
-    public function setMaturityDate(\DateTimeImmutable $maturityDate): static
-    {
-        $this->maturityDate = $maturityDate;
-
-        return $this;
-    }
-
-    public function getPaidAmount(): ?float
+    public function getPaidAmount(): float
     {
         return $this->paidAmount;
     }
 
-    public function setPaidAmount(?float $paidAmount): static
+    public function setPaidAmount(float $paidAmount): static
     {
         $this->paidAmount = $paidAmount;
 
@@ -128,7 +104,7 @@ class PaymentRecipe
     {
         if (!$this->paymentRecords->contains($paymentRecord)) {
             $this->paymentRecords->add($paymentRecord);
-            $paymentRecord->setPayment($this);
+            $paymentRecord->setPaymentRecipe($this);
         }
 
         return $this;
@@ -138,10 +114,41 @@ class PaymentRecipe
     {
         if ($this->paymentRecords->removeElement($paymentRecord)) {
             // set the owning side to null (unless already changed)
-            if ($paymentRecord->getPayment() === $this) {
-                $paymentRecord->setPayment(null);
+            if ($paymentRecord->getPaymentRecipe() === $this) {
+                $paymentRecord->setPaymentRecipe(null);
             }
         }
+
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        $nf = new \NumberFormatter('cs_CZ', \NumberFormatter::CURRENCY);
+
+        return $nf->formatCurrency($this->getPayableAmount(), 'CZK').' ('.$this->getMaturityDate()->format('d. m. Y').')';
+    }
+
+    public function getPayableAmount(): float
+    {
+        return $this->payableAmount;
+    }
+
+    public function setPayableAmount(float $payableAmount): static
+    {
+        $this->payableAmount = $payableAmount;
+
+        return $this;
+    }
+
+    public function getMaturityDate(): \DateTimeImmutable
+    {
+        return $this->maturityDate;
+    }
+
+    public function setMaturityDate(\DateTimeImmutable $maturityDate): static
+    {
+        $this->maturityDate = $maturityDate;
 
         return $this;
     }

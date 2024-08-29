@@ -1,0 +1,16 @@
+{# @var record \App\Entity\PaymentRecord #}
+
+{% if field.value is not empty %}
+    {% for record in field.value %}
+        {% set recordDetailUrl = ea_url()
+            .setController('App\\Controller\\Admin\\PaymentRecordCrudController')
+            .setAction(constant('EasyCorp\\Bundle\\EasyAdminBundle\\Config\\Action::DETAIL'))
+            .setEntityId(record.id)
+        %}
+        <a href="{{ recordDetailUrl }}" style="display: block" target="_blank">
+            {{ record.amount|format_currency('CZK') }} ({{ record.paymentDate|date('d. m. Y') }})
+        </a>
+    {% endfor %}
+{% else %}
+    {{ 'No records'|trans({}, 'estate-rent-admin') }}
+{% endif %}

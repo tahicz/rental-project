@@ -3,7 +3,9 @@
 namespace App\Controller\Admin;
 
 use App\Entity\AdditionalFee;
+use App\Entity\Overpayment;
 use App\Entity\PaymentRecipe;
+use App\Entity\PaymentRecord;
 use App\Entity\RentalRecipe;
 use App\Repository\PaymentRepository;
 use App\Repository\RentalRecipeRepository;
@@ -14,6 +16,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -22,6 +25,7 @@ class AdminDashboardController extends AbstractDashboardController
     public function __construct(
         private readonly RentalRecipeRepository $rentalRecipeRepository,
         private readonly PaymentRepository $paymentRepository,
+        private readonly AdminUrlGenerator $adminUrlGenerator
     ) {
     }
 
@@ -38,6 +42,14 @@ class AdminDashboardController extends AbstractDashboardController
         $paymentsActuallyMadeCount = $this->paymentRepository->getPaymentsActuallyMadeCount($today);
         $nextDue = $this->paymentRepository->getNextPaymentDue($today);
 
+        $generateNextPaymentsUrl = $this->adminUrlGenerator
+            ->unsetAll()
+            ->setController(RentalRecipeCrudController::class)
+            ->setAction('generateNewPayments')
+            ->setEntityId($rents[0]->getId())
+            ->generateUrl()
+        ;
+
         return $this->render('admin/main_dashboard.html.twig', [
             'rentalRecipes' => $rents,
             'payments' => [
@@ -46,6 +58,7 @@ class AdminDashboardController extends AbstractDashboardController
                 'actuallyMadeSum' => $paymentsActuallyMadeSum,
                 'actuallyMadeCount' => $paymentsActuallyMadeCount,
                 'nextDue' => $nextDue,
+                'generateNextUrl' => $generateNextPaymentsUrl,
             ],
         ]);
     }
@@ -93,7 +106,8 @@ class AdminDashboardController extends AbstractDashboardController
         yield MenuItem::subMenu('Finance', 'fa-solid fa-magnifying-glass-dollar')
             ->setSubItems(
                 [
-                    MenuItem::linkToCrud('Payments', 'fa-solid fa-wallet', PaymentRecipe::class),
+                    MenuItem::linkToCrud('Payment recipes', 'fa-solid fa-wallet', PaymentRecipe::class),
+                    MenuItem::linkToCrud('Payment records', 'fa-solid fa-dollar', PaymentRecord::class),
                 ]
             );
     }

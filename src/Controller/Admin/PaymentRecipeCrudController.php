@@ -37,6 +37,9 @@ class PaymentRecipeCrudController extends AbstractCrudController
             ->hideWhenCreating();
         yield AssociationField::new('rentalRecipe', 'Rental recipe')
             ->hideOnIndex();
+        yield AssociationField::new('paymentRecords', 'Payment records')
+            ->onlyOnDetail()
+            ->setTemplatePath('admin/field/payment_recipe/detail/records.html.twig');
         yield DateTimeField::new('createdAt')
             ->hideOnForm();
         yield DateTimeField::new('updatedAt')

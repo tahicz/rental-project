@@ -14,7 +14,8 @@ use Symfony\Component\Uid\Ulid;
 #[ORM\HasLifecycleCallbacks]
 class PaymentRecord
 {
-	use Timestampable;
+    use Timestampable;
+
     #[ORM\Id]
     #[ORM\Column(type: UlidType::NAME, unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
@@ -30,6 +31,9 @@ class PaymentRecord
     #[ORM\ManyToOne(inversedBy: 'paymentRecords')]
     #[ORM\JoinColumn(nullable: false)]
     private ?PaymentRecipe $payment = null;
+    #[ORM\JoinColumn(nullable: false, name: 'payment_id')]
+    private ?PaymentRecipe $paymentRecipe = null;
+
 
     public function getId(): ?Ulid
     {
@@ -60,9 +64,16 @@ class PaymentRecord
         return $this;
     }
 
-    public function getPayment(): ?PaymentRecipe
+    public function getPaymentRecipe(): ?PaymentRecipe
     {
-        return $this->payment;
+        return $this->paymentRecipe;
+    }
+
+    public function setPaymentRecipe(?PaymentRecipe $paymentRecipe): static
+    {
+        $this->paymentRecipe = $paymentRecipe;
+
+        return $this;
     }
 
     public function setPayment(?PaymentRecipe $payment): static
@@ -71,4 +82,11 @@ class PaymentRecord
 
         return $this;
     }
+
+	public function __toString(): string
+	{
+		$nf = new \NumberFormatter('cs_CZ', \NumberFormatter::CURRENCY);
+
+		return $nf->formatCurrency($this->getAmount(), 'CZK').' ('.$this->getPaymentDate()->format('d. m. Y').')';
+	}
 }

@@ -82,7 +82,7 @@ class RentalRecipe
             $monthlyRate += $payment;
         }
 
-        return $monthlyRate;
+        return round($monthlyRate, 2);
     }
 
     public function getMaturity(): ?int
