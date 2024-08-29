@@ -36,6 +36,10 @@
 'Payment recipes': 'Platební předpisy'
 # PaymentRecordCrudController
 'Payment records': 'Platební záznamy'
+# OverpaymentCrudController
+'Overpayment': 'Přeplatek'
+'Overpayments': 'Přeplatky'
+
 
 # Entity
 'Created At': 'Vytvořeno'

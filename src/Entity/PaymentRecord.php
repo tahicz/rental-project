@@ -34,6 +34,8 @@ class PaymentRecord
     #[ORM\JoinColumn(nullable: false, name: 'payment_id')]
     private ?PaymentRecipe $paymentRecipe = null;
 
+    #[ORM\OneToOne(mappedBy: 'paymentRecord', cascade: ['persist', 'remove'])]
+    private ?Overpayment $overpayment = null;
 
     public function getId(): ?Ulid
     {
@@ -76,9 +78,19 @@ class PaymentRecord
         return $this;
     }
 
-    public function setPayment(?PaymentRecipe $payment): static
+    public function getOverpayment(): ?Overpayment
     {
-        $this->payment = $payment;
+        return $this->overpayment;
+    }
+
+    public function setOverpayment(Overpayment $overpayment): static
+    {
+        // set the owning side of the relation if necessary
+        if ($overpayment->getPaymentRecord() !== $this) {
+            $overpayment->setPaymentRecord($this);
+        }
+
+        $this->overpayment = $overpayment;
 
         return $this;
     }

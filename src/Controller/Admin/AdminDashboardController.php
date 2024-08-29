@@ -108,6 +108,7 @@ class AdminDashboardController extends AbstractDashboardController
                 [
                     MenuItem::linkToCrud('Payment recipes', 'fa-solid fa-wallet', PaymentRecipe::class),
                     MenuItem::linkToCrud('Payment records', 'fa-solid fa-dollar', PaymentRecord::class),
+                    MenuItem::linkToCrud('Overpayments', 'fa-solid fa-circle-dollar-to-slot', Overpayment::class),
                 ]
             );
     }
