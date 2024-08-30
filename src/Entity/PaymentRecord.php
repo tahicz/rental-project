@@ -95,10 +95,10 @@ class PaymentRecord
         return $this;
     }
 
-	public function __toString(): string
-	{
-		$nf = new \NumberFormatter('cs_CZ', \NumberFormatter::CURRENCY);
+    public function __toString(): string
+    {
+        $nf = new \NumberFormatter('cs_CZ', \NumberFormatter::CURRENCY);
 
-		return $nf->formatCurrency($this->getAmount(), 'CZK').' ('.$this->getPaymentDate()->format('d. m. Y').')';
-	}
+        return $nf->formatCurrency($this->getAmount(), 'CZK').' ('.$this->getPaymentDate()->format('d. m. Y').')';
+    }
 }
