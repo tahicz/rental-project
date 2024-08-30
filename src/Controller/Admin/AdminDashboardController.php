@@ -3,6 +3,8 @@
 namespace App\Controller\Admin;
 
 use App\Entity\AdditionalFee;
+use App\Entity\BankAccount;
+use App\Entity\Income;
 use App\Entity\Overpayment;
 use App\Entity\PaymentRecipe;
 use App\Entity\PaymentRecord;
@@ -106,9 +108,16 @@ class AdminDashboardController extends AbstractDashboardController
         yield MenuItem::subMenu('Finance', 'fa-solid fa-magnifying-glass-dollar')
             ->setSubItems(
                 [
+                    MenuItem::linkToCrud('Income', 'fa-solid fa-wallet', Income::class),
                     MenuItem::linkToCrud('Payment recipes', 'fa-solid fa-wallet', PaymentRecipe::class),
                     MenuItem::linkToCrud('Payment records', 'fa-solid fa-dollar', PaymentRecord::class),
                     MenuItem::linkToCrud('Overpayments', 'fa-solid fa-circle-dollar-to-slot', Overpayment::class),
+                ]
+            );
+        yield MenuItem::subMenu('User settings', 'fas fa-cogs')
+            ->setSubItems(
+                [
+                    MenuItem::linkToCrud('Bank', 'fa-solid fa-bank', BankAccount::class),
                 ]
             );
     }

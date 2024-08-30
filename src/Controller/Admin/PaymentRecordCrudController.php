@@ -7,6 +7,7 @@ use App\Entity\PaymentRecord;
 use App\Enum\SystemEnum;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
@@ -40,12 +41,28 @@ class PaymentRecordCrudController extends AbstractCrudController
             ->hideOnForm();
     }
 
+    public function configureCrud(Crud $crud): Crud
+    {
+        $crud->setEntityLabelInPlural('Payment records')
+            ->setEntityLabelInSingular('Payment record')
+            ->setPageTitle(Crud::PAGE_INDEX, '%entity_label_singular% list')
+            ->setPageTitle(Crud::PAGE_DETAIL, '%entity_label_singular% detail');
+
+        return $crud;
+    }
+
+    /**
+     * @param PaymentRecord $entityInstance
+     */
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         $this->updateRecipe($entityManager, $entityInstance);
         parent::persistEntity($entityManager, $entityInstance);
     }
 
+    /**
+     * @param PaymentRecord $entityInstance
+     */
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         $this->updateRecipe($entityManager, $entityInstance);
@@ -57,21 +74,23 @@ class PaymentRecordCrudController extends AbstractCrudController
      */
     private function updateRecipe(EntityManagerInterface $entityManager, PaymentRecord $record): void
     {
-        $paidAmount = $record->getPaymentRecipe()->getPaidAmount();
-        if (null === $paidAmount) {
-            $paidAmount = 0.0;
-        }
+        $recipe = $record->getPaymentRecipe();
+        $paidAmount = $recipe->getPaidAmount();
 
         $paidAmount += $record->getAmount();
 
-        if ($paidAmount > $record->getPaymentRecipe()->getPayableAmount()) {
-            $overpayment = $paidAmount - $record->getPaymentRecipe()->getPayableAmount();
+        if ($paidAmount > $recipe->getPayableAmount()) {
+            $overpayment = $paidAmount - $recipe->getPayableAmount();
             $this->saveOverpayment($overpayment, $record, $entityManager);
         }
-        $record->getPaymentRecipe()->setPaidAmount($paidAmount);
+        $recipe->setPaidAmount($paidAmount);
 
-        if ($paidAmount === $record->getPaymentRecipe()->getPayableAmount()) {
-            $record->getPaymentRecipe()->setPaymentDate(\DateTimeImmutable::createFromMutable($record->getCreatedAt()));
+        if ($paidAmount === $recipe->getPayableAmount()) {
+            $createdAt = $record->getCreatedAt();
+            if (null === $createdAt) {
+                $createdAt = new \DateTime('now');
+            }
+            $recipe->setPaymentDate(\DateTimeImmutable::createFromMutable($createdAt));
         }
     }
 

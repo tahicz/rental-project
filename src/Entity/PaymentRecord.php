@@ -29,10 +29,8 @@ class PaymentRecord
     private \DateTimeImmutable $paymentDate;
 
     #[ORM\ManyToOne(inversedBy: 'paymentRecords')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?PaymentRecipe $payment = null;
-    #[ORM\JoinColumn(nullable: false, name: 'payment_id')]
-    private ?PaymentRecipe $paymentRecipe = null;
+    #[ORM\JoinColumn(name: 'payment_id', nullable: false)]
+    private PaymentRecipe $paymentRecipe;
 
     #[ORM\OneToOne(mappedBy: 'paymentRecord', cascade: ['persist', 'remove'])]
     private ?Overpayment $overpayment = null;
@@ -66,12 +64,12 @@ class PaymentRecord
         return $this;
     }
 
-    public function getPaymentRecipe(): ?PaymentRecipe
+    public function getPaymentRecipe(): PaymentRecipe
     {
         return $this->paymentRecipe;
     }
 
-    public function setPaymentRecipe(?PaymentRecipe $paymentRecipe): static
+    public function setPaymentRecipe(PaymentRecipe $paymentRecipe): static
     {
         $this->paymentRecipe = $paymentRecipe;
 
@@ -98,7 +96,16 @@ class PaymentRecord
     public function __toString(): string
     {
         $nf = new \NumberFormatter('cs_CZ', \NumberFormatter::CURRENCY);
+        $amount = $this->getAmount();
+        if (null === $amount) {
+            $amount = 0.0;
+        }
 
-        return $nf->formatCurrency($this->getAmount(), 'CZK').' ('.$this->getPaymentDate()->format('d. m. Y').')';
+        $paymentDate = $this->getPaymentDate();
+        if (null === $paymentDate) {
+            $paymentDate = new \DateTimeImmutable('now');
+        }
+
+        return $nf->formatCurrency($amount, 'CZK').' ('.$paymentDate->format('d. m. Y').')';
     }
 }

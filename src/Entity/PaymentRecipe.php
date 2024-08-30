@@ -37,7 +37,7 @@ class PaymentRecipe
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: false)]
     private \DateTimeImmutable $maturityDate;
 
-    #[ORM\Column(nullable: true, options: ['default' => 0.0])]
+    #[ORM\Column(nullable: false, options: ['default' => 0.0])]
     private float $paidAmount = 0.0;
 
     /**
@@ -115,7 +115,7 @@ class PaymentRecipe
         if ($this->paymentRecords->removeElement($paymentRecord)) {
             // set the owning side to null (unless already changed)
             if ($paymentRecord->getPaymentRecipe() === $this) {
-                $paymentRecord->setPaymentRecipe(null);
+                //                $paymentRecord->setPaymentRecipe(null);
             }
         }
 

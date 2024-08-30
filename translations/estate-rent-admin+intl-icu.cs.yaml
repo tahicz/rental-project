@@ -11,6 +11,9 @@
 'Actually made payments sum': 'Suma uskutečněných plateb'
 'Actually made payments count': 'Počet uskutečněných plateb'
 'Next due': 'Následující platba'
+'Income': 'Příjem'
+'User settings': 'Uživatelská nastavení'
+'Bank': 'Banka'
 # AdditionalFeeCrudController
 'Description': 'Popis'
 'Fee amount': 'Poplatek'
@@ -36,9 +39,23 @@
 'Payment recipes': 'Platební předpisy'
 # PaymentRecordCrudController
 'Payment records': 'Platební záznamy'
+'Payment record': 'Platební záznam'
 # OverpaymentCrudController
 'Overpayment': 'Přeplatek'
 'Overpayments': 'Přeplatky'
+# Income
+'Amount': 'Částka'
+'Income date': 'Datum platby'
+'Variable symbol': 'Variabilní symbol'
+'Message': 'Zpráva'
+'Recipient account': 'Bankovní účet příjemce'
+'Sender account': 'Bankovní účet odesílatele'
+# Bank account
+'Bank account': 'Bankovní účet'
+'Bank accounts': 'Bankovní účety'
+'Bank account prefix': 'Předčíslí účtu'
+'Bank account number': 'Číslo účtu'
+'Bank code': 'Kód banky'
 
 
 # Entity

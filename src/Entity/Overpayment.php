@@ -24,7 +24,6 @@ class Overpayment
     private float $amount = 0.0;
 
     #[ORM\OneToOne(inversedBy: 'overpayment', cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)]
     private ?PaymentRecord $paymentRecord = null;
 
     public function getId(): ?Ulid
