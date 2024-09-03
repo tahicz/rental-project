@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Entity\Payment;
+use App\Entity\PaymentRecipe;
 use App\Entity\RentalRecipe;
 use App\Repository\PaymentRepository;
 
@@ -34,9 +34,9 @@ readonly class PaymentPlanner
         $this->paymentRepository->flush();
     }
 
-    private function createPayment(RentalRecipe $rentalRecipe, \DateTimeInterface $paymentDate): Payment
+    private function createPayment(RentalRecipe $rentalRecipe, \DateTimeInterface $paymentDate): PaymentRecipe
     {
-        $payment = new Payment();
+        $payment = new PaymentRecipe();
         $payment->setRentalRecipe($rentalRecipe)
             ->setMaturityDate(\DateTimeImmutable::createFromInterface($paymentDate))
             ->setPayableAmount($rentalRecipe->getFullMonthlyRate());

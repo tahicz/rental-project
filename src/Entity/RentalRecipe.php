@@ -43,9 +43,9 @@ class RentalRecipe
     private Collection $additionalFees;
 
     /**
-     * @var Collection<int, Payment>
+     * @var Collection<int, PaymentRecipe>
      */
-    #[ORM\OneToMany(targetEntity: Payment::class, mappedBy: 'rentalRecipe')]
+    #[ORM\OneToMany(targetEntity: PaymentRecipe::class, mappedBy: 'rentalRecipe')]
     private Collection $payments;
 
     public function __construct()
@@ -82,7 +82,7 @@ class RentalRecipe
             $monthlyRate += $payment;
         }
 
-        return $monthlyRate;
+        return round($monthlyRate, 2);
     }
 
     public function getMaturity(): ?int
@@ -140,14 +140,14 @@ class RentalRecipe
     }
 
     /**
-     * @return Collection<int, Payment>
+     * @return Collection<int, PaymentRecipe>
      */
     public function getPayments(): Collection
     {
         return $this->payments;
     }
 
-    public function addPayment(Payment $payment): static
+    public function addPayment(PaymentRecipe $payment): static
     {
         if (!$this->payments->contains($payment)) {
             $this->payments->add($payment);
@@ -157,7 +157,7 @@ class RentalRecipe
         return $this;
     }
 
-    public function removePayment(Payment $payment): static
+    public function removePayment(PaymentRecipe $payment): static
     {
         if ($this->payments->removeElement($payment)) {
             // set the owning side to null (unless already changed)

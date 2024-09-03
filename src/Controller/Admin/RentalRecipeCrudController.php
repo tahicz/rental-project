@@ -71,7 +71,7 @@ class RentalRecipeCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        $generateNextPaymentsAction = Action::new('new_payments_action', 'Generate new payments', 'fa-solid fa-file-invoice-dollar');
+        $generateNextPaymentsAction = Action::new('new_payments_action', 'Generate payments recipes', 'fa-solid fa-file-invoice-dollar');
         $generateNextPaymentsAction->linkToCrudAction('generateNewPayments');
         $actions->add(Crud::PAGE_DETAIL, $generateNextPaymentsAction);
 

@@ -2,22 +2,24 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Payment;
+use App\Entity\PaymentRecipe;
 use App\Entity\RentalRecipe;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
-class PaymentFixtures extends Fixture implements DependentFixtureInterface
+class PaymentRecipeFixtures extends Fixture implements DependentFixtureInterface
 {
+    public const PAYMENTS_RECIPE_COUNT = 50;
+
     public function load(ObjectManager $manager): void
     {
         $rentalRecipe = $this->getRentalRecipe(RentalRecipeFixtures::RENTAL_RECIPE_1);
         $paymentDate = \DateTime::createFromImmutable($rentalRecipe->getValidityFrom());
         $paymentDate->modify('first day of this month')
             ->modify('+'.($rentalRecipe->getMaturity() - 1).' day');
-        while ($paymentDate < new \DateTime('today +12months')) {
-            $payment = new Payment();
+        for ($i = 0; $i < self::PAYMENTS_RECIPE_COUNT; ++$i) {
+            $payment = new PaymentRecipe();
             $payment->setPayableAmount($rentalRecipe->getFullMonthlyRate())
                 ->setMaturityDate(\DateTimeImmutable::createFromMutable($paymentDate))
                 ->setRentalRecipe($rentalRecipe)
@@ -26,10 +28,17 @@ class PaymentFixtures extends Fixture implements DependentFixtureInterface
             $manager->persist($payment);
             $rentalRecipe->addPayment($payment);
 
+            $this->addReference(self::getRefMask($i), $payment);
+
             $paymentDate = $paymentDate->modify('next month');
         }
 
         $manager->flush();
+    }
+
+    public static function getRefMask(int $i): string
+    {
+        return sprintf(__CLASS__.'_%02d', $i);
     }
 
     /**

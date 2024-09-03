@@ -2,7 +2,7 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Payment;
+use App\Entity\PaymentRecipe;
 use App\Enum\SystemEnum;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -13,11 +13,11 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 
-class PaymentCrudController extends AbstractCrudController
+class PaymentRecipeCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
-        return Payment::class;
+        return PaymentRecipe::class;
     }
 
     public function configureFields(string $pageName): iterable
@@ -37,6 +37,9 @@ class PaymentCrudController extends AbstractCrudController
             ->hideWhenCreating();
         yield AssociationField::new('rentalRecipe', 'Rental recipe')
             ->hideOnIndex();
+        yield AssociationField::new('paymentRecords', 'Payment records')
+            ->onlyOnDetail()
+            ->setTemplatePath('admin/field/payment_recipe/detail/records.html.twig');
         yield DateTimeField::new('createdAt')
             ->hideOnForm();
         yield DateTimeField::new('updatedAt')
@@ -54,11 +57,11 @@ class PaymentCrudController extends AbstractCrudController
     }
 
     /**
-     * @param Payment $entityInstance
+     * @param PaymentRecipe $entityInstance
      */
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
-        if (!$entityInstance instanceof Payment) {
+        if (!$entityInstance instanceof PaymentRecipe) {
             throw new \RuntimeException('Expected instance of Payment, got '.get_class($entityInstance));
         }
 
@@ -66,7 +69,7 @@ class PaymentCrudController extends AbstractCrudController
         parent::persistEntity($entityManager, $entityInstance);
     }
 
-    private function setPaymentAmount(Payment $payment): void
+    private function setPaymentAmount(PaymentRecipe $payment): void
     {
         if (null === $payment->getRentalRecipe()) {
             $amount = 0.0;
@@ -77,11 +80,11 @@ class PaymentCrudController extends AbstractCrudController
     }
 
     /**
-     * @param Payment $entityInstance
+     * @param PaymentRecipe $entityInstance
      */
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
-        if (!$entityInstance instanceof Payment) {
+        if (!$entityInstance instanceof PaymentRecipe) {
             throw new \RuntimeException('Expected instance of Payment, got '.get_class($entityInstance));
         }
 

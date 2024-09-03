@@ -11,6 +11,9 @@
 'Actually made payments sum': 'Suma uskutečněných plateb'
 'Actually made payments count': 'Počet uskutečněných plateb'
 'Next due': 'Následující platba'
+'Income': 'Příjem'
+'User settings': 'Uživatelská nastavení'
+'Bank': 'Banka'
 # AdditionalFeeCrudController
 'Description': 'Popis'
 'Fee amount': 'Poplatek'
@@ -18,19 +21,44 @@
 'Billable': 'Zúčtovatelné'
 'Additional fee': 'Poplatek'
 'Additional fees': 'Poplatky'
+'Next payment due is not generated.': 'Další platební předpisy neexistují'
 # RentalRecipeCrudController
 'Basic rent': 'Základní nájem'
 'Rental recipe': 'Předpis nájemného'
 'Rental recipes': 'Předpisy nájemného'
 'Validity From': 'Platné od'
 'Maturity': 'Splatnost dne'
-# PaymentyCrudController
+'Generate payments recipes': 'Vygenerovat nové platební předpisy'
+# PaymentRecipeCrudController
 'Payments': 'Platby'
 'Payment': 'Platba'
 'Payable amount': 'Částka k zaplacení'
 'Paid amount': 'Zaplacená částka'
 'Maturity date': 'Datum splatnosti'
 'Payment date': 'Datum platby'
+'Payment recipes': 'Platební předpisy'
+'Payment recipe': 'Platební předpis'
+# PaymentRecordCrudController
+'Payment records': 'Platební záznamy'
+'Payment record': 'Platební záznam'
+'Received on': 'Přijato dne'
+# OverpaymentCrudController
+'Overpayment': 'Přeplatek'
+'Overpayments': 'Přeplatky'
+# Income
+'Amount': 'Částka'
+'Income date': 'Datum platby'
+'Variable symbol': 'Variabilní symbol'
+'Message': 'Zpráva'
+'Recipient account': 'Bankovní účet příjemce'
+'Sender account': 'Bankovní účet odesílatele'
+# Bank account
+'Bank account': 'Bankovní účet'
+'Bank accounts': 'Bankovní účety'
+'Bank account prefix': 'Předčíslí účtu'
+'Bank account number': 'Číslo účtu'
+'Bank code': 'Kód banky'
+
 
 # Entity
 'Created At': 'Vytvořeno'
