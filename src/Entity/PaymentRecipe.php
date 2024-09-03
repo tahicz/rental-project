@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Entity\Traits\Timestampable;
+use App\Enum\SystemEnum;
 use App\Repository\PaymentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -43,7 +44,7 @@ class PaymentRecipe
     /**
      * @var Collection<int, PaymentRecord>
      */
-    #[ORM\OneToMany(targetEntity: PaymentRecord::class, mappedBy: 'paymentRecipe', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: PaymentRecord::class, mappedBy: 'paymentRecipe')]
     private Collection $paymentRecords;
 
     public function __construct()
@@ -73,7 +74,7 @@ class PaymentRecipe
         return $this->paymentDate;
     }
 
-    public function setPaymentDate(\DateTimeImmutable $paymentDate): static
+    public function setPaymentDate(?\DateTimeImmutable $paymentDate): static
     {
         $this->paymentDate = $paymentDate;
 
@@ -92,41 +93,11 @@ class PaymentRecipe
         return $this;
     }
 
-    /**
-     * @return Collection<int, PaymentRecord>
-     */
-    public function getPaymentRecords(): Collection
-    {
-        return $this->paymentRecords;
-    }
-
-    public function addPaymentRecord(PaymentRecord $paymentRecord): static
-    {
-        if (!$this->paymentRecords->contains($paymentRecord)) {
-            $this->paymentRecords->add($paymentRecord);
-            $paymentRecord->setPaymentRecipe($this);
-        }
-
-        return $this;
-    }
-
-    public function removePaymentRecord(PaymentRecord $paymentRecord): static
-    {
-        if ($this->paymentRecords->removeElement($paymentRecord)) {
-            // set the owning side to null (unless already changed)
-            if ($paymentRecord->getPaymentRecipe() === $this) {
-                //                $paymentRecord->setPaymentRecipe(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function __toString(): string
     {
         $nf = new \NumberFormatter('cs_CZ', \NumberFormatter::CURRENCY);
 
-        return $nf->formatCurrency($this->getPayableAmount(), 'CZK').' ('.$this->getMaturityDate()->format('d. m. Y').')';
+        return $nf->formatCurrency($this->getPaidAmount(), SystemEnum::CURRENCY->value).' z '.$nf->formatCurrency($this->getPayableAmount(), SystemEnum::CURRENCY->value).' ('.$this->getMaturityDate()->format('d. m. Y').')';
     }
 
     public function getPayableAmount(): float
@@ -149,6 +120,36 @@ class PaymentRecipe
     public function setMaturityDate(\DateTimeImmutable $maturityDate): static
     {
         $this->maturityDate = $maturityDate;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PaymentRecord>
+     */
+    public function getPaymentRecords(): Collection
+    {
+        return $this->paymentRecords;
+    }
+
+    public function addPaymentRecords(PaymentRecord $paymentRecords): static
+    {
+        if (!$this->paymentRecords->contains($paymentRecords)) {
+            $this->paymentRecords->add($paymentRecords);
+            $paymentRecords->setPaymentRecipe($this);
+        }
+
+        return $this;
+    }
+
+    public function removePaymentRecords(PaymentRecord $paymentRecords): static
+    {
+        if ($this->paymentRecords->removeElement($paymentRecords)) {
+            // set the owning side to null (unless already changed)
+            if ($paymentRecords->getPaymentRecipe() === $this) {
+                $paymentRecords->setPaymentRecipe(null);
+            }
+        }
 
         return $this;
     }

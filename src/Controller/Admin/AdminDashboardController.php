@@ -9,6 +9,7 @@ use App\Entity\Overpayment;
 use App\Entity\PaymentRecipe;
 use App\Entity\PaymentRecord;
 use App\Entity\RentalRecipe;
+use App\Repository\IncomeRepository;
 use App\Repository\PaymentRepository;
 use App\Repository\RentalRecipeRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -27,7 +28,8 @@ class AdminDashboardController extends AbstractDashboardController
     public function __construct(
         private readonly RentalRecipeRepository $rentalRecipeRepository,
         private readonly PaymentRepository $paymentRepository,
-        private readonly AdminUrlGenerator $adminUrlGenerator
+        private readonly AdminUrlGenerator $adminUrlGenerator,
+        private readonly IncomeRepository $incomeRepository
     ) {
     }
 
@@ -40,9 +42,13 @@ class AdminDashboardController extends AbstractDashboardController
 
         $paymentsDueSum = $this->paymentRepository->getPaymentsDueSum($today);
         $paymentsDueCount = $this->paymentRepository->getPaymentsDueCount($today);
-        $paymentsActuallyMadeSum = $this->paymentRepository->getPaymentsActuallyMadeSum($today);
-        $paymentsActuallyMadeCount = $this->paymentRepository->getPaymentsActuallyMadeCount($today);
+        $paymentsActuallyMade = $this->incomeRepository->findAll();
         $nextDue = $this->paymentRepository->getNextPaymentDue($today);
+
+        $incomeSum = 0.0;
+        array_walk($paymentsActuallyMade, function (Income $income) use (&$incomeSum) {
+            $incomeSum += $income->getAmount();
+        });
 
         $generateNextPaymentsUrl = $this->adminUrlGenerator
             ->unsetAll()
@@ -57,8 +63,8 @@ class AdminDashboardController extends AbstractDashboardController
             'payments' => [
                 'dueSum' => $paymentsDueSum,
                 'dueCount' => $paymentsDueCount,
-                'actuallyMadeSum' => $paymentsActuallyMadeSum,
-                'actuallyMadeCount' => $paymentsActuallyMadeCount,
+                'actuallyMadeSum' => $incomeSum,
+                'actuallyMadeCount' => count($paymentsActuallyMade),
                 'nextDue' => $nextDue,
                 'generateNextUrl' => $generateNextPaymentsUrl,
             ],

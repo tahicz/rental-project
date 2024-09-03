@@ -37,9 +37,11 @@
 'Maturity date': 'Datum splatnosti'
 'Payment date': 'Datum platby'
 'Payment recipes': 'Platební předpisy'
+'Payment recipe': 'Platební předpis'
 # PaymentRecordCrudController
 'Payment records': 'Platební záznamy'
 'Payment record': 'Platební záznam'
+'Received on': 'Přijato dne'
 # OverpaymentCrudController
 'Overpayment': 'Přeplatek'
 'Overpayments': 'Přeplatky'

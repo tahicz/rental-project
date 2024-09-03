@@ -2,10 +2,9 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Overpayment;
 use App\Entity\PaymentRecord;
 use App\Enum\SystemEnum;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
@@ -29,11 +28,18 @@ class PaymentRecordCrudController extends AbstractCrudController
         yield MoneyField::new('amount', 'Amount')
             ->setCurrency(SystemEnum::CURRENCY->value)
             ->setStoredAsCents(false);
-        yield DateField::new('paymentDate');
-        yield AssociationField::new('paymentRecipe')
+        yield DateField::new('receivedOn', 'Received on');
+        yield AssociationField::new('paymentRecipe', 'Payment recipe')
             ->setQueryBuilder(function (QueryBuilder $queryBuilder) {
-                $queryBuilder->andWhere('entity.paidAmount <> entity.payableAmount');
-            });
+                $queryBuilder->andWhere('entity.payableAmount > entity.paidAmount');
+            })
+            ->setSortProperty('maturityDate');
+        yield AssociationField::new('income')
+        ->setSortProperty('incomeDate')
+        ->setQueryBuilder(function (QueryBuilder $queryBuilder) {
+            $queryBuilder->leftJoin(PaymentRecord::class, 'pr', Join::WITH, 'pr.income = entity.id')
+            ->andWhere('pr.amount is null');
+        });
 
         yield DateTimeField::new('createdAt')
             ->hideOnForm();
@@ -49,57 +55,5 @@ class PaymentRecordCrudController extends AbstractCrudController
             ->setPageTitle(Crud::PAGE_DETAIL, '%entity_label_singular% detail');
 
         return $crud;
-    }
-
-    /**
-     * @param PaymentRecord $entityInstance
-     */
-    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
-    {
-        $this->updateRecipe($entityManager, $entityInstance);
-        parent::persistEntity($entityManager, $entityInstance);
-    }
-
-    /**
-     * @param PaymentRecord $entityInstance
-     */
-    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
-    {
-        $this->updateRecipe($entityManager, $entityInstance);
-        parent::updateEntity($entityManager, $entityInstance);
-    }
-
-    /**
-     * @todo Tady by bylo lepší tuto fci volat až po uložení platby do DTB a následně projít všechny platby k předpisu platby a sčítnout zaplacené sumy.
-     */
-    private function updateRecipe(EntityManagerInterface $entityManager, PaymentRecord $record): void
-    {
-        $recipe = $record->getPaymentRecipe();
-        $paidAmount = $recipe->getPaidAmount();
-
-        $paidAmount += $record->getAmount();
-
-        if ($paidAmount > $recipe->getPayableAmount()) {
-            $overpayment = $paidAmount - $recipe->getPayableAmount();
-            $this->saveOverpayment($overpayment, $record, $entityManager);
-        }
-        $recipe->setPaidAmount($paidAmount);
-
-        if ($paidAmount === $recipe->getPayableAmount()) {
-            $createdAt = $record->getCreatedAt();
-            if (null === $createdAt) {
-                $createdAt = new \DateTime('now');
-            }
-            $recipe->setPaymentDate(\DateTimeImmutable::createFromMutable($createdAt));
-        }
-    }
-
-    private function saveOverpayment(float $overpaymentAmount, PaymentRecord $record, EntityManagerInterface $entityManager): void
-    {
-        $overpayment = new Overpayment();
-        $overpayment->setAmount($overpaymentAmount)
-        ->setPaymentRecord($record);
-
-        $entityManager->persist($overpayment);
     }
 }

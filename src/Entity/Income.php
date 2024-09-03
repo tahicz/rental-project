@@ -3,7 +3,10 @@
 namespace App\Entity;
 
 use App\Entity\Traits\Timestampable;
+use App\Enum\SystemEnum;
 use App\Repository\IncomeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -41,6 +44,17 @@ class Income
     #[ORM\JoinColumn(nullable: false)]
     private BankAccount $senderAccount;
 
+    /**
+     * @var Collection<int, PaymentRecord>
+     */
+    #[ORM\OneToMany(targetEntity: PaymentRecord::class, mappedBy: 'income')]
+    private Collection $paymentRecords;
+
+    public function __construct()
+    {
+        $this->paymentRecords = new ArrayCollection();
+    }
+
     public function getId(): ?Ulid
     {
         return $this->id;
@@ -58,7 +72,7 @@ class Income
         return $this;
     }
 
-    public function getAmount(): ?float
+    public function getAmount(): float
     {
         return $this->amount;
     }
@@ -121,5 +135,46 @@ class Income
         $this->senderAccount = $senderAccount;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, PaymentRecord>
+     */
+    public function getPaymentRecords(): Collection
+    {
+        return $this->paymentRecords;
+    }
+
+    public function addPaymentRecord(PaymentRecord $paymentRecord): static
+    {
+        if (!$this->paymentRecords->contains($paymentRecord)) {
+            $this->paymentRecords->add($paymentRecord);
+            $paymentRecord->setIncome($this);
+        }
+
+        return $this;
+    }
+
+    public function removePaymentRecord(PaymentRecord $paymentRecord): static
+    {
+        if ($this->paymentRecords->removeElement($paymentRecord)) {
+            // set the owning side to null (unless already changed)
+            if ($paymentRecord->getIncome() === $this) {
+                $paymentRecord->setIncome(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        $nf = new \NumberFormatter('cs_CZ', \NumberFormatter::CURRENCY);
+        $incomeDate = $this->getIncomeDate();
+        if (null === $incomeDate) {
+            $incomeDate = new \DateTimeImmutable();
+        }
+
+        return $nf->formatCurrency($this->getAmount(), SystemEnum::CURRENCY->value).' ('.$incomeDate->format('d. m. Y').')';
     }
 }
