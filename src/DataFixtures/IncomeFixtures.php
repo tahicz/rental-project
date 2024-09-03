@@ -11,6 +11,13 @@ use Doctrine\Persistence\ObjectManager;
 
 class IncomeFixtures extends Fixture implements DependentFixtureInterface
 {
+    private int $incomeNumber = 0;
+
+    public static function getRefMask(int $incomeNumber): string
+    {
+        return sprintf('ref_%s_%02d', __CLASS__, $incomeNumber);
+    }
+
     public function load(ObjectManager $manager): void
     {
         for ($i = 0; $i < PaymentRecipeFixtures::PAYMENTS_RECIPE_COUNT; ++$i) {
@@ -66,6 +73,8 @@ class IncomeFixtures extends Fixture implements DependentFixtureInterface
             ->setVariableSymbol((int) $maturityDate->format('Ymd'));
 
         $manager->persist($income);
+        $this->addReference(self::getRefMask($this->incomeNumber), $income);
+        ++$this->incomeNumber;
     }
 
     private function splitIncome(float $amount, \DateTimeImmutable $maturityDate, ObjectManager $manager): void

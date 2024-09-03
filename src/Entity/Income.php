@@ -60,7 +60,7 @@ class Income
         return $this->id;
     }
 
-    public function getIncomeDate(): ?\DateTimeImmutable
+    public function getIncomeDate(): \DateTimeImmutable
     {
         return $this->incomeDate;
     }
@@ -170,11 +170,7 @@ class Income
     public function __toString(): string
     {
         $nf = new \NumberFormatter('cs_CZ', \NumberFormatter::CURRENCY);
-        $incomeDate = $this->getIncomeDate();
-        if (null === $incomeDate) {
-            $incomeDate = new \DateTimeImmutable();
-        }
 
-        return $nf->formatCurrency($this->getAmount(), SystemEnum::CURRENCY->value).' ('.$incomeDate->format('d. m. Y').')';
+        return $nf->formatCurrency($this->getAmount(), SystemEnum::CURRENCY->value).' ('.$this->getIncomeDate()->format('d. m. Y').')';
     }
 }
