@@ -40,6 +40,7 @@ class RentalRecipe
      * @var Collection<int, AdditionalFee>
      */
     #[ORM\OneToMany(targetEntity: AdditionalFee::class, mappedBy: 'rentRecipe', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['description' => 'ASC', 'validityFrom' => 'ASC'])]
     private Collection $additionalFees;
 
     /**

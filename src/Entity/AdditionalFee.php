@@ -5,14 +5,18 @@ namespace App\Entity;
 use App\Entity\Traits\Timestampable;
 use App\Enum\AdditionalFeeEnum;
 use App\Enum\PaymentFrequencyEnum;
+use App\Exception\NonRemoveAbleEntity;
 use App\Repository\AdditionalFeeRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
+use Symfony\Contracts\Translation\TranslatableInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[ORM\Entity(repositoryClass: AdditionalFeeRepository::class)]
 #[ORM\Table(name: 'additional_fee')]
 #[ORM\HasLifecycleCallbacks]
-class AdditionalFee
+class AdditionalFee implements TranslatableInterface
 {
     use Timestampable;
 
@@ -37,6 +41,12 @@ class AdditionalFee
     #[ORM\ManyToOne(inversedBy: 'additionalFees')]
     #[ORM\JoinColumn()]
     private ?RentalRecipe $rentRecipe = null;
+
+    #[ORM\OneToOne(targetEntity: self::class, cascade: ['persist', 'remove'])]
+    private ?self $child = null;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $validityFrom = null;
 
     public function getId(): ?Ulid
     {
@@ -111,5 +121,63 @@ class AdditionalFee
         $this->rentRecipe = $rentRecipe;
 
         return $this;
+    }
+
+    public function getChild(): ?self
+    {
+        return $this->child;
+    }
+
+    public function setChild(?self $child): static
+    {
+        $this->child = $child;
+
+        return $this;
+    }
+
+    public function getValidityFrom(): ?\DateTimeImmutable
+    {
+        return $this->validityFrom;
+    }
+
+    public function setValidityFrom(\DateTimeImmutable $validityFrom): static
+    {
+        $this->validityFrom = $validityFrom;
+
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->getDescription();
+    }
+
+    public function __clone(): void
+    {
+        $this->id = new Ulid();
+    }
+
+    #[ORM\PrePersist]
+    public function setDefaultValidityFrom(): void
+    {
+        if (null === $this->getValidityFrom()) {
+            if ($this->rentRecipe instanceof RentalRecipe) {
+                $date = $this->rentRecipe->getValidityFrom();
+            } else {
+                $date = new \DateTimeImmutable();
+            }
+            $this->setValidityFrom($date);
+        }
+    }
+
+    #[ORM\PreRemove]
+    public function preRemove(): void
+    {
+        throw new NonRemoveAbleEntity($this);
+    }
+
+    public function trans(TranslatorInterface $translator, ?string $locale = null): string
+    {
+        return AdditionalFeeEnum::getTranslateAbleValue($this->getDescription())->trans($translator, $locale);
     }
 }
