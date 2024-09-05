@@ -14,6 +14,7 @@ class AdditionalFeeFixtures extends Fixture implements DependentFixtureInterface
 {
     public const ADDITIONAL_FEE_1 = __CLASS__.'_1';
     public const ADDITIONAL_FEE_2 = __CLASS__.'_2';
+    public const ADDITIONAL_FEE_3 = __CLASS__.'_3';
 
     public function load(ObjectManager $manager): void
     {
@@ -26,6 +27,10 @@ class AdditionalFeeFixtures extends Fixture implements DependentFixtureInterface
                 ->setPaymentFrequency($item['payment_frequency'])
                 ->setBillable($item['billable'])
                 ->setRentRecipe($rentalRecipe);
+
+            if (isset($item['validity_from'])) {
+                $fee->setValidityFrom(new \DateTimeImmutable($item['validity_from']));
+            }
 
             $rentalRecipe->addAdditionalFee($fee);
 
@@ -67,6 +72,7 @@ class AdditionalFeeFixtures extends Fixture implements DependentFixtureInterface
      *   'fee_amount':int,
      *   'payment_frequency':string,
      *   'billable':bool,
+     *     'validity_from':string|null,
      *   'ref':string
      * }>
      */
@@ -77,6 +83,7 @@ class AdditionalFeeFixtures extends Fixture implements DependentFixtureInterface
             'fee_amount' => 700,
             'payment_frequency' => PaymentFrequencyEnum::ANNUALLY->value,
             'billable' => false,
+            'validity_from' => null,
             'ref' => self::ADDITIONAL_FEE_1,
         ];
 
@@ -85,7 +92,16 @@ class AdditionalFeeFixtures extends Fixture implements DependentFixtureInterface
             'fee_amount' => 1500,
             'payment_frequency' => PaymentFrequencyEnum::MONTHLY->value,
             'billable' => true,
+            'validity_from' => null,
             'ref' => self::ADDITIONAL_FEE_2,
+        ];
+        yield [
+            'description' => AdditionalFeeEnum::WATER_AND_SEWAGE->value,
+            'fee_amount' => 800,
+            'payment_frequency' => PaymentFrequencyEnum::MONTHLY->value,
+            'billable' => true,
+            'validity_from' => '2021-06-25',
+            'ref' => self::ADDITIONAL_FEE_3,
         ];
     }
 }

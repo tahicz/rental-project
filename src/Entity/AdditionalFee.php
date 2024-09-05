@@ -42,11 +42,14 @@ class AdditionalFee implements TranslatableInterface
     #[ORM\JoinColumn()]
     private ?RentalRecipe $rentRecipe = null;
 
-    #[ORM\OneToOne(targetEntity: self::class, cascade: ['persist', 'remove'])]
-    private ?self $child = null;
-
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $validityFrom = null;
+
+    #[ORM\OneToOne(targetEntity: self::class, cascade: ['persist', 'remove'])]
+    private ?self $parent = null;
+
+    #[ORM\OneToOne(targetEntity: self::class, cascade: ['persist', 'remove'])]
+    private ?self $child = null;
 
     public function getId(): ?Ulid
     {
@@ -123,18 +126,6 @@ class AdditionalFee implements TranslatableInterface
         return $this;
     }
 
-    public function getChild(): ?self
-    {
-        return $this->child;
-    }
-
-    public function setChild(?self $child): static
-    {
-        $this->child = $child;
-
-        return $this;
-    }
-
     public function getValidityFrom(): ?\DateTimeImmutable
     {
         return $this->validityFrom;
@@ -179,5 +170,29 @@ class AdditionalFee implements TranslatableInterface
     public function trans(TranslatorInterface $translator, ?string $locale = null): string
     {
         return AdditionalFeeEnum::getTranslateAbleValue($this->getDescription())->trans($translator, $locale);
+    }
+
+    public function getParent(): ?self
+    {
+        return $this->parent;
+    }
+
+    public function setParent(?self $parent): static
+    {
+        $this->parent = $parent;
+
+        return $this;
+    }
+
+    public function getChild(): ?self
+    {
+        return $this->child;
+    }
+
+    public function setChild(?self $child): static
+    {
+        $this->child = $child;
+
+        return $this;
     }
 }

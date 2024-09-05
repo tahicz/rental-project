@@ -8,6 +8,7 @@ use App\Enum\PaymentFrequencyEnum;
 use App\Enum\SystemEnum;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
@@ -39,6 +40,8 @@ class AdditionalFeeCrudController extends AbstractCrudController
             ->setRequired(true);
         yield BooleanField::new('billable')
             ->renderAsSwitch(in_array($pageName, [Crud::PAGE_NEW, Crud::PAGE_EDIT], true));
+        yield DateField::new('validityFrom');
+        yield AssociationField::new('rentRecipe');
         yield DateField::new('validityFrom');
         yield DateTimeField::new('createdAt')
             ->hideOnForm();
