@@ -43,7 +43,15 @@ class RentalRecipeCrudController extends AbstractCrudController
         yield CollectionField::new('additionalFees', 'Additional fees')
             ->hideOnIndex()
             ->useEntryCrudForm(AdditionalFeeCrudController::class)
-            ->allowAdd();
+            ->setEntryIsComplex(true)
+            ->setTemplatePath('admin/field/rental_recipe/detail/additional_fees.html.twig')
+            ->allowAdd()
+            ->allowDelete(false)
+            ->renderExpanded(true)
+            ->setFormTypeOptions([
+                'by_reference' => true,
+            ]);
+
         yield IntegerField::new('maturity')
             ->setFormTypeOptions([
                 'attr' => [

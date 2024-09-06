@@ -1,0 +1,37 @@
+{# @var fee \App\Entity\AdditionalFee #}
+
+{% if field.value is not empty %}
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th scope="col">name</th>
+            <th scope="col">amount</th>
+            <th scope="col">validity from</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for fee in field.value %}
+            {% set feeDetailUrl = ea_url()
+                .setController('App\\Controller\\Admin\\AdditionalFeeCrudController')
+                .setAction(constant('EasyCorp\\Bundle\\EasyAdminBundle\\Config\\Action::DETAIL'))
+                .setEntityId(fee.id) %}
+            <tr>
+                <th scope="row">
+                    <a href="{{ feeDetailUrl }}" style="display: block" target="_blank">
+                        {{ fee|trans({}, 'estate-rent-admin') }}
+                    </a>
+                </th>
+                <td>
+                    {{ fee.feeAmount|format_currency('CZK') }}
+                </td>
+                <td>
+                    {{ fee.validityFrom|date('d. m. Y') }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% else %}
+    {{ 'No records'|trans({}, 'estate-rent-admin') }}
+{% endif %}

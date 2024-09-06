@@ -40,6 +40,7 @@ class RentalRecipe
      * @var Collection<int, AdditionalFee>
      */
     #[ORM\OneToMany(targetEntity: AdditionalFee::class, mappedBy: 'rentRecipe', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['description' => 'ASC', 'validityFrom' => 'ASC'])]
     private Collection $additionalFees;
 
     /**
@@ -75,11 +76,14 @@ class RentalRecipe
     {
         $monthlyRate = $this->getBasicRent();
         foreach ($this->getAdditionalFees() as $additionalFee) {
-            $payment = match ($additionalFee->getPaymentFrequency()) {
-                PaymentFrequencyEnum::ANNUALLY->value => $additionalFee->getFeeAmount() / 12,
-                default => $additionalFee->getFeeAmount(),
-            };
-            $monthlyRate += $payment;
+            if (null === $additionalFee->getChild()) {
+                $payment = match ($additionalFee->getPaymentFrequency()) {
+                    PaymentFrequencyEnum::ANNUALLY->value => $additionalFee->getFeeAmount() / 12,
+                    default => $additionalFee->getFeeAmount(),
+                };
+
+                $monthlyRate += $payment;
+            }
         }
 
         return round($monthlyRate, 2);
@@ -172,5 +176,22 @@ class RentalRecipe
     public function __toString(): string
     {
         return (string) $this->id;
+    }
+
+    public function getFullPaymentForMonth(\DateTimeImmutable $paymentDate): float
+    {
+        $amount = $this->getBasicRent();
+        foreach ($this->getAdditionalFees() as $additionalFee) {
+            if ($additionalFee->getValidityFrom() <= $paymentDate && ($additionalFee->getValidityTo() > $paymentDate || null === $additionalFee->getValidityTo())) {
+                $payment = match ($additionalFee->getPaymentFrequency()) {
+                    PaymentFrequencyEnum::ANNUALLY->value => $additionalFee->getFeeAmount() / 12,
+                    default => $additionalFee->getFeeAmount(),
+                };
+
+                $amount += $payment;
+            }
+        }
+
+        return $amount;
     }
 }

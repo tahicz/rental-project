@@ -5,14 +5,18 @@ namespace App\Entity;
 use App\Entity\Traits\Timestampable;
 use App\Enum\AdditionalFeeEnum;
 use App\Enum\PaymentFrequencyEnum;
+use App\Exception\NonRemoveAbleEntity;
 use App\Repository\AdditionalFeeRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
+use Symfony\Contracts\Translation\TranslatableInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[ORM\Entity(repositoryClass: AdditionalFeeRepository::class)]
 #[ORM\Table(name: 'additional_fee')]
 #[ORM\HasLifecycleCallbacks]
-class AdditionalFee
+class AdditionalFee implements TranslatableInterface
 {
     use Timestampable;
 
@@ -26,7 +30,7 @@ class AdditionalFee
     private string $description;
 
     #[ORM\Column(nullable: false)]
-    private int $feeAmount;
+    private float $feeAmount;
 
     #[ORM\Column(length: 255, nullable: false)]
     private string $paymentFrequency;
@@ -37,6 +41,18 @@ class AdditionalFee
     #[ORM\ManyToOne(inversedBy: 'additionalFees')]
     #[ORM\JoinColumn()]
     private ?RentalRecipe $rentRecipe = null;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $validityFrom = null;
+
+    #[ORM\OneToOne(targetEntity: self::class, cascade: ['persist', 'remove'])]
+    private ?self $parent = null;
+
+    #[ORM\OneToOne(targetEntity: self::class, cascade: ['persist', 'remove'])]
+    private ?self $child = null;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $validityTo = null;
 
     public function getId(): ?Ulid
     {
@@ -60,12 +76,12 @@ class AdditionalFee
         return $this;
     }
 
-    public function getFeeAmount(): int
+    public function getFeeAmount(): float
     {
         return $this->feeAmount;
     }
 
-    public function setFeeAmount(int $feeAmount): static
+    public function setFeeAmount(float $feeAmount): static
     {
         $this->feeAmount = $feeAmount;
 
@@ -109,6 +125,88 @@ class AdditionalFee
     public function setRentRecipe(?RentalRecipe $rentRecipe): static
     {
         $this->rentRecipe = $rentRecipe;
+
+        return $this;
+    }
+
+    public function getValidityFrom(): ?\DateTimeImmutable
+    {
+        return $this->validityFrom;
+    }
+
+    public function setValidityFrom(\DateTimeImmutable $validityFrom): static
+    {
+        $this->validityFrom = $validityFrom;
+
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->getDescription();
+    }
+
+    public function __clone(): void
+    {
+        $this->id = new Ulid();
+    }
+
+    #[ORM\PrePersist]
+    public function setDefaultValidityFrom(): void
+    {
+        if (null === $this->getValidityFrom()) {
+            if ($this->rentRecipe instanceof RentalRecipe) {
+                $date = $this->rentRecipe->getValidityFrom();
+            } else {
+                $date = new \DateTimeImmutable();
+            }
+            $this->setValidityFrom($date);
+        }
+    }
+
+    #[ORM\PreRemove]
+    public function preRemove(): void
+    {
+        throw new NonRemoveAbleEntity($this);
+    }
+
+    public function trans(TranslatorInterface $translator, ?string $locale = null): string
+    {
+        return AdditionalFeeEnum::getTranslateAbleValue($this->getDescription())->trans($translator, $locale);
+    }
+
+    public function getParent(): ?self
+    {
+        return $this->parent;
+    }
+
+    public function setParent(?self $parent): static
+    {
+        $this->parent = $parent;
+
+        return $this;
+    }
+
+    public function getChild(): ?self
+    {
+        return $this->child;
+    }
+
+    public function setChild(?self $child): static
+    {
+        $this->child = $child;
+
+        return $this;
+    }
+
+    public function getValidityTo(): ?\DateTimeImmutable
+    {
+        return $this->validityTo;
+    }
+
+    public function setValidityTo(?\DateTimeImmutable $validityTo): static
+    {
+        $this->validityTo = $validityTo;
 
         return $this;
     }
