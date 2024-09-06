@@ -30,7 +30,7 @@ class AdditionalFee implements TranslatableInterface
     private string $description;
 
     #[ORM\Column(nullable: false)]
-    private int $feeAmount;
+    private float $feeAmount;
 
     #[ORM\Column(length: 255, nullable: false)]
     private string $paymentFrequency;
@@ -50,6 +50,9 @@ class AdditionalFee implements TranslatableInterface
 
     #[ORM\OneToOne(targetEntity: self::class, cascade: ['persist', 'remove'])]
     private ?self $child = null;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $validityTo = null;
 
     public function getId(): ?Ulid
     {
@@ -73,12 +76,12 @@ class AdditionalFee implements TranslatableInterface
         return $this;
     }
 
-    public function getFeeAmount(): int
+    public function getFeeAmount(): float
     {
         return $this->feeAmount;
     }
 
-    public function setFeeAmount(int $feeAmount): static
+    public function setFeeAmount(float $feeAmount): static
     {
         $this->feeAmount = $feeAmount;
 
@@ -192,6 +195,18 @@ class AdditionalFee implements TranslatableInterface
     public function setChild(?self $child): static
     {
         $this->child = $child;
+
+        return $this;
+    }
+
+    public function getValidityTo(): ?\DateTimeImmutable
+    {
+        return $this->validityTo;
+    }
+
+    public function setValidityTo(?\DateTimeImmutable $validityTo): static
+    {
+        $this->validityTo = $validityTo;
 
         return $this;
     }

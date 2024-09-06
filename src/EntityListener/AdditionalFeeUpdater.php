@@ -33,6 +33,7 @@ class AdditionalFeeUpdater
                 ->setParent($originFee)
                 ->setChild(null);
 
+            $originFee->setValidityTo($this->fee->getValidityFrom());
             foreach ($event->getEntityChangeSet() as $field => $values) {
                 $event->setNewValue($field, $event->getOldValue($field));
             }
@@ -63,6 +64,7 @@ class AdditionalFeeUpdater
         if ($parent instanceof AdditionalFee) {
             $additionalFee->setParent($parent);
             $parent->setChild($additionalFee);
+            $parent->setValidityTo($additionalFee->getValidityFrom());
             $event->getObjectManager()->persist($additionalFee);
             $event->getObjectManager()->persist($parent);
 

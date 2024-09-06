@@ -36,10 +36,12 @@ readonly class PaymentPlanner
 
     private function createPayment(RentalRecipe $rentalRecipe, \DateTimeInterface $paymentDate): PaymentRecipe
     {
+        $paymentDateImmutable = \DateTimeImmutable::createFromInterface($paymentDate);
+
         $payment = new PaymentRecipe();
         $payment->setRentalRecipe($rentalRecipe)
-            ->setMaturityDate(\DateTimeImmutable::createFromInterface($paymentDate))
-            ->setPayableAmount($rentalRecipe->getFullMonthlyRate());
+            ->setMaturityDate($paymentDateImmutable)
+            ->setPayableAmount($rentalRecipe->getFullPaymentForMonth($paymentDateImmutable));
 
         $this->paymentRepository->persist($payment);
 
