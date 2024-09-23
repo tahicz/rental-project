@@ -3,6 +3,7 @@
 namespace App\EntityListener;
 
 use App\Entity\AdditionalFee;
+use App\Exception\NoValiditySetException;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\PostPersistEventArgs;
@@ -64,7 +65,12 @@ class AdditionalFeeUpdater
         if ($parent instanceof AdditionalFee) {
             $additionalFee->setParent($parent);
             $parent->setChild($additionalFee);
-            $parent->setValidityTo($additionalFee->getValidityFrom());
+
+            $feeValidity = $additionalFee->getValidityFrom();
+            if (!$feeValidity instanceof \DateTimeImmutable) {
+                throw new NoValiditySetException($additionalFee->getId(), $additionalFee::class);
+            }
+            $parent->setValidityTo($feeValidity->modify('-1 day'));
             $event->getObjectManager()->persist($additionalFee);
             $event->getObjectManager()->persist($parent);
 

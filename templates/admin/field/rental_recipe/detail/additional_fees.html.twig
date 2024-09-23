@@ -7,6 +7,7 @@
             <th scope="col">name</th>
             <th scope="col">amount</th>
             <th scope="col">validity from</th>
+            <th scope="col">validity to</th>
         </tr>
         </thead>
         <tbody>
@@ -26,6 +27,9 @@
                 </td>
                 <td>
                     {{ fee.validityFrom|date('d. m. Y') }}
+                </td>
+                <td>
+                    {{ fee.validityTo|date('d. m. Y') }}
                 </td>
             </tr>
         {% endfor %}

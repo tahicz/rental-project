@@ -159,7 +159,7 @@ class AdditionalFee implements TranslatableInterface
             if ($this->rentRecipe instanceof RentalRecipe) {
                 $date = $this->rentRecipe->getValidityFrom();
             } else {
-                throw new NoValiditySetException();
+                throw new NoValiditySetException($this->getId(), self::class);
             }
             $this->setValidityFrom($date);
         }
