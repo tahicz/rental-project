@@ -6,6 +6,7 @@ use App\Entity\Traits\Timestampable;
 use App\Enum\AdditionalFeeEnum;
 use App\Enum\PaymentFrequencyEnum;
 use App\Exception\NonRemoveAbleEntity;
+use App\Exception\NoValiditySetException;
 use App\Repository\AdditionalFeeRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -158,7 +159,7 @@ class AdditionalFee implements TranslatableInterface
             if ($this->rentRecipe instanceof RentalRecipe) {
                 $date = $this->rentRecipe->getValidityFrom();
             } else {
-                $date = new \DateTimeImmutable();
+                throw new NoValiditySetException();
             }
             $this->setValidityFrom($date);
         }
