@@ -9,6 +9,7 @@ use App\Entity\Overpayment;
 use App\Entity\PaymentRecipe;
 use App\Entity\PaymentRecord;
 use App\Entity\RentalRecipe;
+use App\Enum\SystemEnum;
 use App\Repository\IncomeRepository;
 use App\Repository\PaymentRepository;
 use App\Repository\RentalRecipeRepository;
@@ -84,10 +85,10 @@ class AdminDashboardController extends AbstractDashboardController
         return Dashboard::new()
             ->setTitle('EstateRent')
             ->setFaviconPath('favicon.ico')
-            ->setTranslationDomain('estate-rent-admin')
+            ->setTranslationDomain(SystemEnum::TRANSLATION_DOMAIN->value)
             ->setTextDirection('ltr')
             ->renderContentMaximized()
-            ->generateRelativeUrls();
+            ->generateRelativeUrls(false);
     }
 
     public function configureCrud(): Crud

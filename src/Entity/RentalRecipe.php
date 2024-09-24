@@ -49,6 +49,18 @@ class RentalRecipe
     #[ORM\OneToMany(targetEntity: PaymentRecipe::class, mappedBy: 'rentalRecipe')]
     private Collection $payments;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $note = null;
+
+    #[ORM\OneToOne(targetEntity: self::class, cascade: ['persist', 'remove'])]
+    private ?self $parent = null;
+
+    #[ORM\OneToOne(targetEntity: self::class, cascade: ['persist', 'remove'])]
+    private ?self $child = null;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $validityTo = null;
+
     public function __construct()
     {
         $this->additionalFees = new ArrayCollection();
@@ -89,7 +101,7 @@ class RentalRecipe
         return round($monthlyRate, 2);
     }
 
-    public function getMaturity(): ?int
+    public function getMaturity(): int
     {
         return $this->maturity;
     }
@@ -193,5 +205,62 @@ class RentalRecipe
         }
 
         return $amount;
+    }
+
+    public function getNote(): ?string
+    {
+        return $this->note;
+    }
+
+    public function setNote(?string $note): static
+    {
+        $this->note = $note;
+
+        return $this;
+    }
+
+    public function getParent(): ?self
+    {
+        return $this->parent;
+    }
+
+    public function setParent(?self $parent): static
+    {
+        $this->parent = $parent;
+
+        return $this;
+    }
+
+    public function getChild(): ?self
+    {
+        return $this->child;
+    }
+
+    public function setChild(?self $child): static
+    {
+        $this->child = $child;
+
+        return $this;
+    }
+
+    public function getValidityTo(): ?\DateTimeImmutable
+    {
+        return $this->validityTo;
+    }
+
+    public function setValidityTo(?\DateTimeImmutable $validityTo): static
+    {
+        $this->validityTo = $validityTo;
+
+        return $this;
+    }
+
+    public function getLatestState(): self
+    {
+        if (null === $this->getChild()) {
+            return $this;
+        }
+
+        return $this->getChild()->getLatestState();
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enum\Traits;
 
+use App\Enum\SystemEnum;
 use Symfony\Component\Translation\TranslatableMessage;
 
 use function Symfony\Component\Translation\t;
@@ -57,6 +58,6 @@ trait EnumToArray
 
     public static function getTranslateAbleValue(int|string $value): TranslatableMessage
     {
-        return t(static::class.'.'.$value, [], 'estate-rent-admin');
+        return t(static::class.'.'.$value, [], SystemEnum::TRANSLATION_DOMAIN->value);
     }
 }

@@ -4,10 +4,10 @@
     <table class="table table-hover">
         <thead>
         <tr>
-            <th scope="col">name</th>
-            <th scope="col">amount</th>
-            <th scope="col">validity from</th>
-            <th scope="col">validity to</th>
+            <th scope="col">{{ 'Name'|trans({}, 'estate-rent-admin') }}</th>
+            <th scope="col">{{ 'Amount'|trans({}, 'estate-rent-admin') }}</th>
+            <th scope="col">{{ 'Validity From'|trans({}, 'estate-rent-admin') }}</th>
+            <th scope="col">{{ 'Validity To'|trans({}, 'estate-rent-admin') }}</th>
         </tr>
         </thead>
         <tbody>
@@ -29,7 +29,11 @@
                     {{ fee.validityFrom|date('d. m. Y') }}
                 </td>
                 <td>
-                    {{ fee.validityTo|date('d. m. Y') }}
+                    {% if fee.validityTo is not null %}
+                        {{ fee.validityTo|date('d. m. Y') }}
+                    {% else %}
+                        ---
+                    {% endif %}
                 </td>
             </tr>
         {% endfor %}
