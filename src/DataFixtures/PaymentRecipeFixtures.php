@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\PaymentRecipe;
 use App\Entity\RentalRecipe;
+use App\Helper\PaymentHelper;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -15,18 +16,18 @@ class PaymentRecipeFixtures extends Fixture implements DependentFixtureInterface
     public function load(ObjectManager $manager): void
     {
         $rentalRecipe = $this->getRentalRecipe(RentalRecipeFixtures::RENTAL_RECIPE_1);
-        $paymentDate = \DateTime::createFromImmutable($rentalRecipe->getValidityFrom());
-        $paymentDate->modify('first day of this month')
-            ->modify('+'.($rentalRecipe->getMaturity() - 1).' day');
+        $paymentDate = PaymentHelper::createPaymentDate($rentalRecipe->getValidityFrom(), $rentalRecipe->getMaturity());
 
         for ($i = 0; $i < self::PAYMENTS_RECIPE_COUNT; ++$i) {
-            $paymentDateImmutable = \DateTimeImmutable::createFromMutable($paymentDate);
+            if ($rentalRecipe->getValidityTo() < $paymentDate) {
+                if (null === $rentalRecipe->getChild()) {
+                    continue;
+                }
 
-            $payment = new PaymentRecipe();
-            $payment->setPayableAmount($rentalRecipe->getFullPaymentForMonth($paymentDateImmutable))
-                ->setMaturityDate(\DateTimeImmutable::createFromMutable($paymentDate))
-                ->setRentalRecipe($rentalRecipe)
-            ;
+                $rentalRecipe = $rentalRecipe->getChild();
+                $paymentDate = PaymentHelper::createPaymentDate($rentalRecipe->getValidityFrom(), $rentalRecipe->getMaturity());
+            }
+            $payment = $this->createPayment($rentalRecipe, $paymentDate);
 
             $manager->persist($payment);
             $rentalRecipe->addPayment($payment);
@@ -67,5 +68,22 @@ class PaymentRecipeFixtures extends Fixture implements DependentFixtureInterface
         }
 
         return $reference;
+    }
+
+    private function createPayment(
+        RentalRecipe $rentalRecipe,
+        \DateTime $paymentDate
+    ): PaymentRecipe {
+        $maturityDate = \DateTimeImmutable::createFromMutable($paymentDate);
+
+        $payment = new PaymentRecipe();
+        $payment->setPayableAmount(
+            $rentalRecipe->getFullPaymentForMonth($maturityDate)
+        )
+            ->setMaturityDate($maturityDate)
+            ->setRentalRecipe($rentalRecipe)
+        ;
+
+        return $payment;
     }
 }

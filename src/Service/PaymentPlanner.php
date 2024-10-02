@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\PaymentRecipe;
 use App\Entity\RentalRecipe;
+use App\Helper\PaymentHelper;
 use App\Repository\PaymentRepository;
 
 readonly class PaymentPlanner
@@ -17,9 +18,7 @@ readonly class PaymentPlanner
     {
         $lastPayment = $this->paymentRepository->findOneBy(['rentalRecipe' => $rentalRecipe->getId()], ['id' => 'DESC']);
         if (null === $lastPayment) {
-            $paymentDate = \DateTime::createFromImmutable($rentalRecipe->getValidityFrom());
-            $paymentDate->modify('first day of this month')
-                ->modify('+'.($rentalRecipe->getMaturity() - 1).' day');
+            $paymentDate = PaymentHelper::createPaymentDate($rentalRecipe->getValidityFrom(), $rentalRecipe->getMaturity());
 
             $lastPayment = $this->createPayment($rentalRecipe, $paymentDate);
         }
@@ -27,6 +26,14 @@ readonly class PaymentPlanner
         for ($i = 0; $i < $paymentCount; ++$i) {
             $paymentDate = \DateTime::createFromImmutable($lastPayment->getMaturityDate());
             $paymentDate->modify('+1 month');
+
+            if ($rentalRecipe->getValidityTo() < $paymentDate) {
+                if (null === $rentalRecipe->getChild()) {
+                    break;
+                }
+
+                $rentalRecipe = $rentalRecipe->getChild();
+            }
 
             $lastPayment = $this->createPayment($rentalRecipe, $paymentDate);
         }

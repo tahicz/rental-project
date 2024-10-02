@@ -84,6 +84,9 @@ class RentalRecipe
         return $this;
     }
 
+    /**
+     * @deprecated Nereflektuje změny v základní ceně nájemného
+     */
     public function getFullMonthlyRate(): float
     {
         $monthlyRate = $this->getBasicRent();

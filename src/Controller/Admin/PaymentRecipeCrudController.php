@@ -5,6 +5,8 @@ namespace App\Controller\Admin;
 use App\Entity\PaymentRecipe;
 use App\Enum\SystemEnum;
 use Doctrine\ORM\EntityManagerInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
@@ -46,6 +48,13 @@ class PaymentRecipeCrudController extends AbstractCrudController
             ->hideOnForm();
     }
 
+    public function configureActions(Actions $actions): Actions
+    {
+        $actions->disable(Action::NEW, Action::EDIT);
+
+        return parent::configureActions($actions);
+    }
+
     public function configureCrud(Crud $crud): Crud
     {
         $crud->setEntityLabelInPlural('Payments')
@@ -74,7 +83,7 @@ class PaymentRecipeCrudController extends AbstractCrudController
         if (null === $payment->getRentalRecipe()) {
             $amount = 0.0;
         } else {
-            $amount = $payment->getRentalRecipe()->getFullMonthlyRate();
+            $amount = $payment->getRentalRecipe()->getFullPaymentForMonth($payment->getMaturityDate());
         }
         $payment->setPayableAmount($amount);
     }
