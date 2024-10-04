@@ -16,26 +16,30 @@ class PaymentRecipeFixtures extends Fixture implements DependentFixtureInterface
     public function load(ObjectManager $manager): void
     {
         $rentalRecipe = $this->getRentalRecipe(RentalRecipeFixtures::RENTAL_RECIPE_1);
-        $paymentDate = PaymentHelper::createPaymentDate($rentalRecipe->getValidityFrom(), $rentalRecipe->getMaturity());
+        $payment = $rentalRecipe->getRecipePayment()->first();
+        if (false === $payment) {
+            return;
+        }
+        $paymentDate = PaymentHelper::createPaymentDate($payment->getValidityFrom(), $payment->getMaturity());
 
         for ($i = 0; $i < self::PAYMENTS_RECIPE_COUNT; ++$i) {
-            if ($rentalRecipe->getValidityTo() < $paymentDate) {
-                if (null === $rentalRecipe->getChild()) {
-                    continue;
+            if ($payment->getValidityTo() < $paymentDate && null !== $payment->getValidityTo()) {
+                $payment = $rentalRecipe->getRecipePayment()->next();
+                if (false === $payment) {
+                    break;
                 }
-
-                $rentalRecipe = $rentalRecipe->getChild();
-                $paymentDate = PaymentHelper::createPaymentDate($rentalRecipe->getValidityFrom(), $rentalRecipe->getMaturity());
+                $paymentDate = PaymentHelper::createPaymentDate($payment->getValidityFrom(), $payment->getMaturity());
             }
-            $payment = $this->createPayment($rentalRecipe, $paymentDate);
+            $paymentRecipe = $this->createPaymentRecipe($rentalRecipe, $paymentDate);
 
-            $manager->persist($payment);
-            $rentalRecipe->addPayment($payment);
+            $manager->persist($paymentRecipe);
+            $rentalRecipe->addPaymentPlan($paymentRecipe);
 
-            $this->addReference(self::getRefMask($i), $payment);
+            $this->addReference(self::getRefMask($i), $paymentRecipe);
 
             $paymentDate = $paymentDate->modify('next month');
         }
+        $manager->persist($rentalRecipe);
 
         $manager->flush();
     }
@@ -48,10 +52,11 @@ class PaymentRecipeFixtures extends Fixture implements DependentFixtureInterface
     /**
      * @return array<int, string>
      */
-    public function getDependencies()
+    public function getDependencies(): array
     {
         return [
             RentalRecipeFixtures::class,
+            RentalRecipePaymentFixtures::class,
         ];
     }
 
@@ -70,7 +75,7 @@ class PaymentRecipeFixtures extends Fixture implements DependentFixtureInterface
         return $reference;
     }
 
-    private function createPayment(
+    private function createPaymentRecipe(
         RentalRecipe $rentalRecipe,
         \DateTime $paymentDate
     ): PaymentRecipe {

@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use App\Entity\Traits\Timestampable;
 use App\Enum\SystemEnum;
-use App\Repository\PaymentRepository;
+use App\Repository\PaymentRecipeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
-#[ORM\Entity(repositoryClass: PaymentRepository::class)]
+#[ORM\Entity(repositoryClass: PaymentRecipeRepository::class)]
 #[ORM\Table(name: 'payment_recipe')]
 #[ORM\HasLifecycleCallbacks]
 class PaymentRecipe

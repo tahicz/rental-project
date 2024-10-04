@@ -5,20 +5,26 @@ namespace App\Service;
 use App\Entity\PaymentRecipe;
 use App\Entity\RentalRecipe;
 use App\Helper\PaymentHelper;
-use App\Repository\PaymentRepository;
+use App\Repository\PaymentRecipeRepository;
 
 readonly class PaymentPlanner
 {
     public function __construct(
-        private PaymentRepository $paymentRepository
+        private PaymentRecipeRepository $paymentRecipeRepository
     ) {
     }
 
     public function planFuturePayments(RentalRecipe $rentalRecipe, int $paymentCount = 1): void
     {
-        $lastPayment = $this->paymentRepository->findOneBy(['rentalRecipe' => $rentalRecipe->getId()], ['id' => 'DESC']);
+        /** @var PaymentRecipe|null $lastPayment */
+        $lastPayment = $this->paymentRecipeRepository->findOneBy(['rentalRecipe' => $rentalRecipe->getId()], ['id' => 'DESC']);
         if (null === $lastPayment) {
-            $paymentDate = PaymentHelper::createPaymentDate($rentalRecipe->getValidityFrom(), $rentalRecipe->getMaturity());
+            $firstRecipePayment = $rentalRecipe->getRecipePayment()->first();
+            if (false === $firstRecipePayment) {
+                throw new \LogicException('No recipe payment set.');
+            }
+
+            $paymentDate = PaymentHelper::createPaymentDate($firstRecipePayment->getValidityFrom(), $firstRecipePayment->getMaturity());
 
             $lastPayment = $this->createPayment($rentalRecipe, $paymentDate);
         }
@@ -27,18 +33,10 @@ readonly class PaymentPlanner
             $paymentDate = \DateTime::createFromImmutable($lastPayment->getMaturityDate());
             $paymentDate->modify('+1 month');
 
-            if ($rentalRecipe->getValidityTo() < $paymentDate) {
-                if (null === $rentalRecipe->getChild()) {
-                    break;
-                }
-
-                $rentalRecipe = $rentalRecipe->getChild();
-            }
-
             $lastPayment = $this->createPayment($rentalRecipe, $paymentDate);
         }
 
-        $this->paymentRepository->flush();
+        $this->paymentRecipeRepository->flush();
     }
 
     private function createPayment(RentalRecipe $rentalRecipe, \DateTimeInterface $paymentDate): PaymentRecipe
@@ -50,8 +48,19 @@ readonly class PaymentPlanner
             ->setMaturityDate($paymentDateImmutable)
             ->setPayableAmount($rentalRecipe->getFullPaymentForMonth($paymentDateImmutable));
 
-        $this->paymentRepository->persist($payment);
+        $this->paymentRecipeRepository->persist($payment);
 
         return $payment;
+    }
+
+    public function updatePaymentsRecipes(RentalRecipe $rentalRecipe, \DateTime $from): void
+    {
+        /** @var PaymentRecipe[] $payments */
+        $payments = $this->paymentRecipeRepository->getPaymentsFrom($rentalRecipe, $from);
+        foreach ($payments as $payment) {
+            $payment->setPayableAmount($rentalRecipe->getFullPaymentForMonth($payment->getMaturityDate()));
+            $this->paymentRecipeRepository->persist($payment);
+        }
+        $this->paymentRecipeRepository->flush();
     }
 }

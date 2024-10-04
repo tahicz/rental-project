@@ -85,9 +85,16 @@ class EditBasicRentDto
             throw new \RuntimeException();
         }
 
+        $lastPayment = $rentalRecipe->getRecipePayment()->last();
+        if (false === $lastPayment) {
+            $paymentAmount = 0.0;
+        } else {
+            $paymentAmount = $lastPayment->getAmount();
+        }
+
         $dto = new self();
         $dto->setPercentage(0.0)
-            ->setAmount($rentalRecipe->getBasicRent())
+            ->setAmount($paymentAmount)
             ->setNote('')
             ->setValidityFrom(new \DateTime())
             ->setParentId($rentalRecipeId)

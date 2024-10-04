@@ -2,51 +2,44 @@
 {# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
 
 {% if ea.crud.currentPage == 'detail' %}
-    {% if field.formattedValue is not empty %}
-        <table class="table table-hover">
-            <thead>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th scope="col">{{ 'Amount'|trans({}, 'estate-rent-admin') }}</th>
+            <th scope="col">{{ 'Maturity'|trans({}, 'estate-rent-admin') }}</th>
+            <th scope="col">{{ 'Validity From'|trans({}, 'estate-rent-admin') }}</th>
+            <th scope="col">{{ 'Validity To'|trans({}, 'estate-rent-admin') }}</th>
+            <th scope="col">{{ 'Note'|trans({}, 'estate-rent-admin') }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for recipe in field.value %}
             <tr>
-                <th scope="col">{{ 'Amount'|trans({}, 'estate-rent-admin') }}</th>
-                <th scope="col">{{ 'Validity From'|trans({}, 'estate-rent-admin') }}</th>
-                <th scope="col">{{ 'Validity To'|trans({}, 'estate-rent-admin') }}</th>
-                <th scope="col">{{ 'Note'|trans({}, 'estate-rent-admin') }}</th>
+                <th scope="row">
+                    {{ recipe.amount|format_currency('CZK') }}
+                </th>
+                <th scope="row">
+                    {{ recipe.maturity }}
+                </th>
+                <td>
+                    {{ recipe.validityFrom|date('d. m. Y') }}
+                </td>
+                <td>
+                    {% if recipe.validityTo is not null %}
+                        {{ recipe.validityTo|date('d. m. Y') }}
+                    {% else %}
+                        ---
+                    {% endif %}
+                </td>
+                <td>
+                    {{ recipe.note }}
+                </td>
             </tr>
-            </thead>
-            <tbody>
-            {% for recipe in field.formattedValue %}
-                <tr>
-                    <th scope="row">
-                        {{ recipe.basicRent|format_currency('CZK') }}
-                    </th>
-                    <td>
-                        {{ recipe.validityFrom|date('d. m. Y') }}
-                    </td>
-                    <td>
-                        {% if recipe.validityTo is not null %}
-                            {{ recipe.validityTo|date('d. m. Y') }}
-                        {% else %}
-                            ---
-                        {% endif %}
-                    </td>
-                    <td>
-                        {{ recipe.note }}
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        {{ field.value|format_currency('CZK') }}
-    {% endif %}
-{% endif %}
-{% if ea.crud.currentPage == 'index' %}
-    {% if field.formattedValue is not empty %}
-        {% for recipe in field.formattedValue %}
-            {% if loop.last %}
-                {{ recipe.basicRent|format_currency('CZK') }}
-            {% endif %}
         {% endfor %}
-    {% else %}
-        {{ field.value|format_currency('CZK') }}
-    {% endif %}
+        </tbody>
+    </table>
+{% endif %}
+
+{% if ea.crud.currentPage == 'index' %}
+    {{ field.value.last.amount|format_currency('CZK') }}
 {% endif %}

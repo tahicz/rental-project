@@ -3,25 +3,21 @@
 namespace App\Controller\Admin;
 
 use App\Entity\RentalRecipe;
+use App\Entity\RentalRecipePayment;
 use App\Enum\SystemEnum;
 use App\Form\Admin\EditBasicRentForm;
 use App\Form\DTO\EditBasicRentDto;
-use App\Repository\RentalRecipeRepository;
+use App\Helper\PaymentHelper;
+use App\Repository\RentalRecipePaymentRepository;
 use App\Service\PaymentPlanner;
-use Doctrine\ORM\QueryBuilder;
-use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
-use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\Form\Form;
@@ -33,7 +29,7 @@ class RentalRecipeCrudController extends AbstractCrudController
     public function __construct(
         private readonly PaymentPlanner $paymentPlanner,
         private readonly AdminUrlGenerator $adminUrlGenerator,
-        private readonly RentalRecipeRepository $rentalRecipeRepository,
+        private readonly RentalRecipePaymentRepository $rentalRecipePaymentRepository
     ) {
     }
 
@@ -46,21 +42,25 @@ class RentalRecipeCrudController extends AbstractCrudController
     {
         yield IdField::new('id', 'ID')
             ->onlyOnDetail();
-        yield MoneyField::new('basicRent', 'Basic rent')
-            ->setRequired(true)
-            ->setCurrency(SystemEnum::CURRENCY->value)
-            ->setStoredAsCents(false)
+        //        yield MoneyField::new('basicRent', 'Basic rent')
+        //            ->setRequired(true)
+        //            ->setCurrency(SystemEnum::CURRENCY->value)
+        //            ->setStoredAsCents(false)
+        //            ->setTemplatePath('admin/field/rental_recipe/detail/basic_rent.html.twig')
+        //            ->formatValue(function (float $basicRent, RentalRecipe $rentalRecipe): array {
+        //                $data = [];
+        //                while ($rentalRecipe instanceof RentalRecipe) {
+        //                    $data[] = $rentalRecipe;
+        //                    $rentalRecipe = $rentalRecipe->getChild();
+        //                }
+        //
+        //                return $data;
+        //            })
+        //        ;
+        yield CollectionField::new('recipePayment', 'Rent payments')
             ->setTemplatePath('admin/field/rental_recipe/detail/basic_rent.html.twig')
-            ->formatValue(function (float $basicRent, RentalRecipe $rentalRecipe): array {
-                $data = [];
-                while ($rentalRecipe instanceof RentalRecipe) {
-                    $data[] = $rentalRecipe;
-                    $rentalRecipe = $rentalRecipe->getChild();
-                }
-
-                return $data;
-            })
-        ;
+            ->allowAdd(Crud::PAGE_EDIT === $pageName)
+            ->allowDelete(false);
         yield CollectionField::new('additionalFees', 'Additional fees')
             ->hideOnIndex()
             ->useEntryCrudForm(AdditionalFeeCrudController::class)
@@ -72,36 +72,14 @@ class RentalRecipeCrudController extends AbstractCrudController
             ->setFormTypeOptions([
                 'by_reference' => true,
             ]);
-
-        yield IntegerField::new('maturity')
-            ->setFormTypeOptions([
-                'attr' => [
-                    'min' => 1,
-                    'max' => 28,
-                ],
-            ])
-            ->setRequired(true);
+        yield DateTimeField::new('validityFrom')
+            ->hideOnForm();
+        yield DateTimeField::new('validityTo')
+            ->hideOnForm();
         yield DateTimeField::new('createdAt')
             ->hideOnForm();
         yield DateTimeField::new('updatedAt')
             ->hideOnForm();
-    }
-
-    public function createIndexQueryBuilder(
-        SearchDto $searchDto,
-        EntityDto $entityDto,
-        FieldCollection $fields,
-        FilterCollection $filters
-    ): QueryBuilder {
-        $qb = parent::createIndexQueryBuilder(
-            $searchDto,
-            $entityDto,
-            $fields,
-            $filters
-        );
-        $qb->andWhere('entity.parent IS NULL');
-
-        return $qb;
     }
 
     public function configureCrud(Crud $crud): Crud
@@ -150,41 +128,63 @@ class RentalRecipeCrudController extends AbstractCrudController
     {
         /** @var RentalRecipe $entity */
         $entity = $context->getEntity()->getInstance();
-        $latestState = $entity->getLatestState();
 
         /** @var Form $form */
         $form = $this->createForm(
             EditBasicRentForm::class,
-            EditBasicRentDto::defaultData($latestState),
+            EditBasicRentDto::defaultData($entity),
             [
                 'parent' => $entity,
             ]
         );
         $form->handleRequest($context->getRequest());
 
+        /*
+         * @todo aktualizovat existující platební předpisy, které kolidují s aktualizovanou cenou nájmu
+        */
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var EditBasicRentDto $data */
             $data = $form->getData();
 
+            $firstPayment = $entity->getRecipePayment()->first();
+            if (false === $firstPayment) {
+                $firstPaymentAmount = 0.0;
+            } else {
+                $firstPaymentAmount = $firstPayment->getAmount();
+            }
+
+            $lastPayment = $entity->getRecipePayment()->last();
+            if (false === $lastPayment) {
+                $lastPaymentAmount = 0.0;
+                $maturity = (int) SystemEnum::DEFAULT_MATURITY->value;
+            } else {
+                $lastPaymentAmount = $lastPayment->getAmount();
+                $maturity = $lastPayment->getMaturity();
+            }
+
             if (null === $data->getPercentage()) {
                 $amount = $data->getAmount();
             } else {
-                $amount = $latestState->getBasicRent() + ($entity->getBasicRent() * $data->getPercentage());
+                $amount = $lastPaymentAmount + ($firstPaymentAmount * $data->getPercentage());
             }
 
-            $rentalRecipe = new RentalRecipe();
-            $rentalRecipe->setBasicRent(round($amount, 2))
-                ->setMaturity($entity->getMaturity())
+            $newPayment = new RentalRecipePayment();
+            $newPayment->setAmount(round($amount, 2))
+                ->setMaturity($maturity)
                 ->setValidityFrom(\DateTimeImmutable::createFromMutable($data->getValidityFrom()))
                 ->setNote($data->getNote())
-                ->setParent($latestState);
+                ->setRentalRecipe($entity);
 
-            $this->rentalRecipeRepository->persist($rentalRecipe);
+            $this->rentalRecipePaymentRepository->persist($newPayment);
 
-            $latestState->setValidityTo($rentalRecipe->getValidityFrom()->modify('-1 day'))
-                ->setChild($rentalRecipe);
+            if ($lastPayment instanceof RentalRecipePayment) {
+                $lastPayment->setValidityTo($newPayment->getValidityFrom()->modify('-1day'));
+                $this->rentalRecipePaymentRepository->save($lastPayment);
+            }
 
-            $this->rentalRecipeRepository->save($latestState);
+            $this->paymentPlanner->updatePaymentsRecipes($entity, PaymentHelper::createPaymentDate($newPayment->getValidityFrom(), $newPayment->getMaturity()));
+
+            // @todo dopsat chybové hlášky
             $clickedButton = $form->getClickedButton();
             if (!$clickedButton instanceof FormInterface) {
                 throw new \RuntimeException();
