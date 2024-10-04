@@ -31,7 +31,7 @@ class RentalRecipe
      * @var Collection<int, AdditionalFee>
      */
     #[ORM\OneToMany(targetEntity: AdditionalFee::class, mappedBy: 'rentRecipe', cascade: ['persist'], orphanRemoval: true)]
-    #[ORM\OrderBy(['description' => 'ASC', 'validityFrom' => 'ASC'])]
+    #[ORM\OrderBy(['description' => 'ASC'])]
     private Collection $additionalFees;
 
     /**
@@ -83,14 +83,16 @@ class RentalRecipe
         }
 
         foreach ($this->getAdditionalFees() as $additionalFee) {
-            if ($additionalFee->getValidityFrom() <= $paymentDate && ($additionalFee->getValidityTo() > $paymentDate || null === $additionalFee->getValidityTo())) {
-                $payment = match ($additionalFee->getPaymentFrequency()) {
-                    PaymentFrequencyEnum::ANNUALLY->value => $additionalFee->getFeeAmount() / 12,
-                    default => $additionalFee->getFeeAmount(),
-                };
-
-                $amount += $payment;
+            $fee = $additionalFee->getFeePaymentForDate($paymentDate);
+            if (false === $fee) {
+                continue;
             }
+            $payment = match ($additionalFee->getPaymentFrequency()) {
+                PaymentFrequencyEnum::ANNUALLY->value => round($fee->getAmount() / 12, 2),
+                default => $fee->getAmount()
+            };
+
+            $amount += $payment;
         }
 
         return round($amount, 2);

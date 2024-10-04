@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Entity\Traits\Timestampable;
 use App\Enum\SystemEnum;
+use App\Helper\PaymentHelper;
 use App\Repository\PaymentRecipeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -95,9 +96,7 @@ class PaymentRecipe
 
     public function __toString(): string
     {
-        $nf = new \NumberFormatter('cs_CZ', \NumberFormatter::CURRENCY);
-
-        return $nf->formatCurrency($this->getPaidAmount(), SystemEnum::CURRENCY->value).' z '.$nf->formatCurrency($this->getPayableAmount(), SystemEnum::CURRENCY->value).' ('.$this->getMaturityDate()->format('d. m. Y').')';
+        return PaymentHelper::getFormatedCurrency($this->getPaidAmount(), SystemEnum::CURRENCY->value).' z '.PaymentHelper::getFormatedCurrency($this->getPayableAmount(), SystemEnum::CURRENCY->value).' ('.$this->getMaturityDate()->format('d. m. Y').')';
     }
 
     public function getPayableAmount(): float
