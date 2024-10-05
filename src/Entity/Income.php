@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Entity\Traits\Timestampable;
 use App\Enum\SystemEnum;
+use App\Helper\PaymentHelper;
 use App\Repository\IncomeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -169,8 +170,6 @@ class Income
 
     public function __toString(): string
     {
-        $nf = new \NumberFormatter('cs_CZ', \NumberFormatter::CURRENCY);
-
-        return $nf->formatCurrency($this->getAmount(), SystemEnum::CURRENCY->value).' ('.$this->getIncomeDate()->format('d. m. Y').')';
+        return PaymentHelper::getFormatedCurrency($this->getAmount(), SystemEnum::CURRENCY->value).' ('.$this->getIncomeDate()->format('d. m. Y').')';
     }
 }

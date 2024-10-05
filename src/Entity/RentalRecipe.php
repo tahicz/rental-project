@@ -10,7 +10,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RentalRecipeRepository::class)]
 #[ORM\Table(name: 'rental_recipe')]
@@ -25,14 +24,6 @@ class RentalRecipe
     #[ORM\CustomIdGenerator(class: 'doctrine.ulid_generator')]
     private ?Ulid $id = null;
 
-    #[ORM\Column(nullable: false)]
-    #[Assert\Positive()]
-    private float $basicRent;
-
-    #[ORM\Column(nullable: false)]
-    #[Assert\Range(min: 1, max: 28)]
-    private int $maturity;
-
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: false)]
     private \DateTimeImmutable $validityFrom;
 
@@ -40,19 +31,30 @@ class RentalRecipe
      * @var Collection<int, AdditionalFee>
      */
     #[ORM\OneToMany(targetEntity: AdditionalFee::class, mappedBy: 'rentRecipe', cascade: ['persist'], orphanRemoval: true)]
-    #[ORM\OrderBy(['description' => 'ASC', 'validityFrom' => 'ASC'])]
+    #[ORM\OrderBy(['description' => 'ASC'])]
     private Collection $additionalFees;
 
     /**
      * @var Collection<int, PaymentRecipe>
      */
     #[ORM\OneToMany(targetEntity: PaymentRecipe::class, mappedBy: 'rentalRecipe')]
-    private Collection $payments;
+    private Collection $paymentsPlan;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $validityTo = null;
+
+    /**
+     * @var Collection<int, RentalRecipePayment>
+     */
+    #[ORM\OneToMany(targetEntity: RentalRecipePayment::class, mappedBy: 'rentalRecipe')]
+    #[ORM\OrderBy(['validityFrom' => 'ASC'])]
+    private Collection $recipePayment;
 
     public function __construct()
     {
         $this->additionalFees = new ArrayCollection();
-        $this->payments = new ArrayCollection();
+        $this->paymentsPlan = new ArrayCollection();
+        $this->recipePayment = new ArrayCollection();
     }
 
     public function getId(): ?Ulid
@@ -60,45 +62,43 @@ class RentalRecipe
         return $this->id;
     }
 
-    public function getBasicRent(): float
+    public function getFullRateForCurrentMonth(): float
     {
-        return $this->basicRent;
+        $today = new \DateTimeImmutable();
+
+        return $this->getFullPaymentForMonth($today);
     }
 
-    public function setBasicRent(float $basicRent): static
+    public function getFullPaymentForMonth(\DateTimeImmutable $paymentDate): float
     {
-        $this->basicRent = $basicRent;
+        $payment = $this->getRecipePayment()
+            ->filter(function (RentalRecipePayment $payment) use ($paymentDate) {
+                return $payment->getValidityFrom() <= $paymentDate && (null === $payment->getValidityTo(
+                ) || $payment->getValidityTo() > $paymentDate);
+            })
+            ->first();
 
-        return $this;
-    }
-
-    public function getFullMonthlyRate(): float
-    {
-        $monthlyRate = $this->getBasicRent();
-        foreach ($this->getAdditionalFees() as $additionalFee) {
-            if (null === $additionalFee->getChild()) {
-                $payment = match ($additionalFee->getPaymentFrequency()) {
-                    PaymentFrequencyEnum::ANNUALLY->value => $additionalFee->getFeeAmount() / 12,
-                    default => $additionalFee->getFeeAmount(),
-                };
-
-                $monthlyRate += $payment;
-            }
+        if (false === $payment) {
+            $amount = 0.0;
+        } else {
+            $amount = $payment->getAmount();
         }
 
-        return round($monthlyRate, 2);
-    }
+        foreach ($this->getAdditionalFees() as $additionalFee) {
+            $fee = $additionalFee->getFeePaymentForDate($paymentDate);
+            if (false === $fee) {
+                continue;
+            }
 
-    public function getMaturity(): ?int
-    {
-        return $this->maturity;
-    }
+            $monthlyPayment = match ($additionalFee->getPaymentFrequency()) {
+                PaymentFrequencyEnum::ANNUALLY->value => round($fee->getAmount() / 12, 2),
+                default => $fee->getAmount()
+            };
 
-    public function setMaturity(int $maturity): static
-    {
-        $this->maturity = $maturity;
+            $amount += $monthlyPayment;
+        }
 
-        return $this;
+        return round($amount, 2);
     }
 
     public function getValidityFrom(): \DateTimeImmutable
@@ -146,24 +146,24 @@ class RentalRecipe
     /**
      * @return Collection<int, PaymentRecipe>
      */
-    public function getPayments(): Collection
+    public function getPaymentsPlan(): Collection
     {
-        return $this->payments;
+        return $this->paymentsPlan;
     }
 
-    public function addPayment(PaymentRecipe $payment): static
+    public function addPaymentPlan(PaymentRecipe $payment): static
     {
-        if (!$this->payments->contains($payment)) {
-            $this->payments->add($payment);
+        if (!$this->paymentsPlan->contains($payment)) {
+            $this->paymentsPlan->add($payment);
             $payment->setRentalRecipe($this);
         }
 
         return $this;
     }
 
-    public function removePayment(PaymentRecipe $payment): static
+    public function removePaymentPlan(PaymentRecipe $payment): static
     {
-        if ($this->payments->removeElement($payment)) {
+        if ($this->paymentsPlan->removeElement($payment)) {
             // set the owning side to null (unless already changed)
             if ($payment->getRentalRecipe() === $this) {
                 $payment->setRentalRecipe(null);
@@ -178,20 +178,23 @@ class RentalRecipe
         return (string) $this->id;
     }
 
-    public function getFullPaymentForMonth(\DateTimeImmutable $paymentDate): float
+    public function getValidityTo(): ?\DateTimeImmutable
     {
-        $amount = $this->getBasicRent();
-        foreach ($this->getAdditionalFees() as $additionalFee) {
-            if ($additionalFee->getValidityFrom() <= $paymentDate && ($additionalFee->getValidityTo() > $paymentDate || null === $additionalFee->getValidityTo())) {
-                $payment = match ($additionalFee->getPaymentFrequency()) {
-                    PaymentFrequencyEnum::ANNUALLY->value => $additionalFee->getFeeAmount() / 12,
-                    default => $additionalFee->getFeeAmount(),
-                };
+        return $this->validityTo;
+    }
 
-                $amount += $payment;
-            }
-        }
+    public function setValidityTo(?\DateTimeImmutable $validityTo): static
+    {
+        $this->validityTo = $validityTo;
 
-        return $amount;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, RentalRecipePayment>
+     */
+    public function getRecipePayment(): Collection
+    {
+        return $this->recipePayment;
     }
 }

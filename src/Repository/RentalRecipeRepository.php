@@ -15,4 +15,20 @@ class RentalRecipeRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, RentalRecipe::class);
     }
+
+    public function save(RentalRecipe $rentalRecipe): void
+    {
+        $this->persist($rentalRecipe);
+        $this->flush();
+    }
+
+    public function persist(RentalRecipe $rentalRecipe): void
+    {
+        $this->getEntityManager()->persist($rentalRecipe);
+    }
+
+    public function flush(): void
+    {
+        $this->getEntityManager()->flush();
+    }
 }

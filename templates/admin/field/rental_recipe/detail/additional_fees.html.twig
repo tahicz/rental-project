@@ -1,12 +1,12 @@
 {# @var fee \App\Entity\AdditionalFee #}
 
 {% if field.value is not empty %}
+{#    {{ dump(field) }}#}
     <table class="table table-hover">
         <thead>
         <tr>
-            <th scope="col">name</th>
-            <th scope="col">amount</th>
-            <th scope="col">validity from</th>
+            <th scope="col">{{ 'Name'|trans({}, 'estate-rent-admin') }}</th>
+            <th scope="col">{{ 'Fee payment'|trans({}, 'estate-rent-admin') }}</th>
         </tr>
         </thead>
         <tbody>
@@ -22,10 +22,7 @@
                     </a>
                 </th>
                 <td>
-                    {{ fee.feeAmount|format_currency('CZK') }}
-                </td>
-                <td>
-                    {{ fee.validityFrom|date('d. m. Y') }}
+                    {% include 'admin/field/additional_fee/detail/additional_fee_payment.html.twig'with {'field':{'value':fee.additionalFeePayments}} %}
                 </td>
             </tr>
         {% endfor %}

@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\PaymentRecipe;
 use App\Entity\RentalRecipe;
+use App\Helper\PaymentHelper;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -15,26 +16,30 @@ class PaymentRecipeFixtures extends Fixture implements DependentFixtureInterface
     public function load(ObjectManager $manager): void
     {
         $rentalRecipe = $this->getRentalRecipe(RentalRecipeFixtures::RENTAL_RECIPE_1);
-        $paymentDate = \DateTime::createFromImmutable($rentalRecipe->getValidityFrom());
-        $paymentDate->modify('first day of this month')
-            ->modify('+'.($rentalRecipe->getMaturity() - 1).' day');
+        $payment = $rentalRecipe->getRecipePayment()->first();
+        if (false === $payment) {
+            return;
+        }
+        $paymentDate = PaymentHelper::createPaymentDate($payment->getValidityFrom(), $payment->getMaturity());
 
         for ($i = 0; $i < self::PAYMENTS_RECIPE_COUNT; ++$i) {
-            $paymentDateImmutable = \DateTimeImmutable::createFromMutable($paymentDate);
+            if ($payment->getValidityTo() < $paymentDate && null !== $payment->getValidityTo()) {
+                $payment = $rentalRecipe->getRecipePayment()->next();
+                if (false === $payment) {
+                    break;
+                }
+                $paymentDate = PaymentHelper::createPaymentDate($payment->getValidityFrom(), $payment->getMaturity());
+            }
+            $paymentRecipe = $this->createPaymentRecipe($rentalRecipe, $paymentDate);
 
-            $payment = new PaymentRecipe();
-            $payment->setPayableAmount($rentalRecipe->getFullPaymentForMonth($paymentDateImmutable))
-                ->setMaturityDate(\DateTimeImmutable::createFromMutable($paymentDate))
-                ->setRentalRecipe($rentalRecipe)
-            ;
+            $manager->persist($paymentRecipe);
+            $rentalRecipe->addPaymentPlan($paymentRecipe);
 
-            $manager->persist($payment);
-            $rentalRecipe->addPayment($payment);
-
-            $this->addReference(self::getRefMask($i), $payment);
+            $this->addReference(self::getRefMask($i), $paymentRecipe);
 
             $paymentDate = $paymentDate->modify('next month');
         }
+        $manager->persist($rentalRecipe);
 
         $manager->flush();
     }
@@ -47,10 +52,11 @@ class PaymentRecipeFixtures extends Fixture implements DependentFixtureInterface
     /**
      * @return array<int, string>
      */
-    public function getDependencies()
+    public function getDependencies(): array
     {
         return [
             RentalRecipeFixtures::class,
+            RentalRecipePaymentFixtures::class,
         ];
     }
 
@@ -67,5 +73,22 @@ class PaymentRecipeFixtures extends Fixture implements DependentFixtureInterface
         }
 
         return $reference;
+    }
+
+    private function createPaymentRecipe(
+        RentalRecipe $rentalRecipe,
+        \DateTime $paymentDate
+    ): PaymentRecipe {
+        $maturityDate = \DateTimeImmutable::createFromMutable($paymentDate);
+
+        $payment = new PaymentRecipe();
+        $payment->setPayableAmount(
+            $rentalRecipe->getFullPaymentForMonth($maturityDate)
+        )
+            ->setMaturityDate($maturityDate)
+            ->setRentalRecipe($rentalRecipe)
+        ;
+
+        return $payment;
     }
 }

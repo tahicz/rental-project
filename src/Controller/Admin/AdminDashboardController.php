@@ -5,12 +5,12 @@ namespace App\Controller\Admin;
 use App\Entity\AdditionalFee;
 use App\Entity\BankAccount;
 use App\Entity\Income;
-use App\Entity\Overpayment;
 use App\Entity\PaymentRecipe;
 use App\Entity\PaymentRecord;
 use App\Entity\RentalRecipe;
+use App\Enum\SystemEnum;
 use App\Repository\IncomeRepository;
-use App\Repository\PaymentRepository;
+use App\Repository\PaymentRecipeRepository;
 use App\Repository\RentalRecipeRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -27,7 +27,7 @@ class AdminDashboardController extends AbstractDashboardController
 {
     public function __construct(
         private readonly RentalRecipeRepository $rentalRecipeRepository,
-        private readonly PaymentRepository $paymentRepository,
+        private readonly PaymentRecipeRepository $paymentRepository,
         private readonly AdminUrlGenerator $adminUrlGenerator,
         private readonly IncomeRepository $incomeRepository
     ) {
@@ -50,13 +50,17 @@ class AdminDashboardController extends AbstractDashboardController
             $incomeSum += $income->getAmount();
         });
 
-        $generateNextPaymentsUrl = $this->adminUrlGenerator
-            ->unsetAll()
-            ->setController(RentalRecipeCrudController::class)
-            ->setAction('generateNewPayments')
-            ->setEntityId($rents[0]->getId())
-            ->generateUrl()
-        ;
+        if (empty($rents)) {
+            $generateNextPaymentsUrl = '';
+        } else {
+            $generateNextPaymentsUrl = $this->adminUrlGenerator
+                ->unsetAll()
+                ->setController(RentalRecipeCrudController::class)
+                ->setAction('generateNewPayments')
+                ->setEntityId($rents[0]->getId())
+                ->generateUrl()
+            ;
+        }
 
         return $this->render('admin/main_dashboard.html.twig', [
             'rentalRecipes' => $rents,
@@ -84,10 +88,10 @@ class AdminDashboardController extends AbstractDashboardController
         return Dashboard::new()
             ->setTitle('EstateRent')
             ->setFaviconPath('favicon.ico')
-            ->setTranslationDomain('estate-rent-admin')
+            ->setTranslationDomain(SystemEnum::TRANSLATION_DOMAIN->value)
             ->setTextDirection('ltr')
             ->renderContentMaximized()
-            ->generateRelativeUrls();
+            ->generateRelativeUrls(false);
     }
 
     public function configureCrud(): Crud
@@ -117,7 +121,6 @@ class AdminDashboardController extends AbstractDashboardController
                     MenuItem::linkToCrud('Income', 'fa-solid fa-wallet', Income::class),
                     MenuItem::linkToCrud('Payment recipes', 'fa-solid fa-wallet', PaymentRecipe::class),
                     MenuItem::linkToCrud('Payment records', 'fa-solid fa-dollar', PaymentRecord::class),
-                    MenuItem::linkToCrud('Overpayments', 'fa-solid fa-circle-dollar-to-slot', Overpayment::class),
                 ]
             );
         yield MenuItem::subMenu('User settings', 'fas fa-cogs')

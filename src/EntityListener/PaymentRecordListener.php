@@ -19,16 +19,7 @@ class PaymentRecordListener
      */
     public function onPostPersist(PaymentRecord $paymentRecord, LifecycleEventArgs $event): void
     {
-        $recipe = $paymentRecord->getPaymentRecipe();
-        if (null === $recipe) {
-            return;
-        }
-        $this->recountPaidAmount($recipe);
-        if ($recipe->getPaidAmount() === $recipe->getPayableAmount()) {
-            $recipe->setPaymentDate($paymentRecord->getReceivedOn());
-        }
-
-        $event->getObjectManager()->flush();
+        $this->changePaymentList($paymentRecord, $event);
     }
 
     /**
@@ -36,19 +27,7 @@ class PaymentRecordListener
      */
     public function onPostUpdate(PaymentRecord $paymentRecord, LifecycleEventArgs $event): void
     {
-        $recipe = $paymentRecord->getPaymentRecipe();
-        if (null === $recipe) {
-            return;
-        }
-        $this->recountPaidAmount($recipe);
-
-        if ($recipe->getPaidAmount() !== $recipe->getPayableAmount()) {
-            $recipe->setPaymentDate(null);
-        }
-        if ($recipe->getPaidAmount() === $recipe->getPayableAmount()) {
-            $recipe->setPaymentDate($paymentRecord->getReceivedOn());
-        }
-        $event->getObjectManager()->flush();
+        $this->changePaymentList($paymentRecord, $event);
     }
 
     /**
@@ -56,18 +35,26 @@ class PaymentRecordListener
      */
     public function onPostRemove(PaymentRecord $paymentRecord, LifecycleEventArgs $event): void
     {
+        $this->changePaymentList($paymentRecord, $event);
+    }
+
+    /**
+     * @param LifecycleEventArgs<ObjectManager> $event
+     */
+    private function changePaymentList(PaymentRecord $paymentRecord, LifecycleEventArgs $event): void
+    {
         $recipe = $paymentRecord->getPaymentRecipe();
         if (null === $recipe) {
             return;
         }
         $this->recountPaidAmount($recipe);
+
         if ($recipe->getPaidAmount() !== $recipe->getPayableAmount()) {
             $recipe->setPaymentDate(null);
         }
         if ($recipe->getPaidAmount() === $recipe->getPayableAmount()) {
             $recipe->setPaymentDate($paymentRecord->getReceivedOn());
         }
-
         $event->getObjectManager()->flush();
     }
 
@@ -77,6 +64,7 @@ class PaymentRecordListener
         foreach ($recipe->getPaymentRecords() as $record) {
             $paidAmount += $record->getAmount();
         }
+        $paidAmount = round($paidAmount, 2);
         if ($paidAmount > $recipe->getPayableAmount()) {
             throw new \RuntimeException('Paid amount ('.$paidAmount.') cannot be greater than payable amount ('.$recipe->getPayableAmount().')');
         }

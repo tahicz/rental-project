@@ -7,7 +7,8 @@ use App\Enum\AdditionalFeeEnum;
 use App\Enum\PaymentFrequencyEnum;
 use App\Exception\NonRemoveAbleEntity;
 use App\Repository\AdditionalFeeRepository;
-use Doctrine\DBAL\Types\Types;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatableInterface;
@@ -29,9 +30,6 @@ class AdditionalFee implements TranslatableInterface
     #[ORM\Column(length: 255, nullable: false)]
     private string $description;
 
-    #[ORM\Column(nullable: false)]
-    private float $feeAmount;
-
     #[ORM\Column(length: 255, nullable: false)]
     private string $paymentFrequency;
 
@@ -42,17 +40,17 @@ class AdditionalFee implements TranslatableInterface
     #[ORM\JoinColumn()]
     private ?RentalRecipe $rentRecipe = null;
 
-    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
-    private ?\DateTimeImmutable $validityFrom = null;
+    /**
+     * @var Collection<int, AdditionalFeePayment>
+     */
+    #[ORM\OneToMany(targetEntity: AdditionalFeePayment::class, mappedBy: 'additionalFee', cascade: ['persist'])]
+    #[ORM\OrderBy(['validityFrom' => 'ASC'])]
+    private Collection $additionalFeePayments;
 
-    #[ORM\OneToOne(targetEntity: self::class, cascade: ['persist', 'remove'])]
-    private ?self $parent = null;
-
-    #[ORM\OneToOne(targetEntity: self::class, cascade: ['persist', 'remove'])]
-    private ?self $child = null;
-
-    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
-    private ?\DateTimeImmutable $validityTo = null;
+    public function __construct()
+    {
+        $this->additionalFeePayments = new ArrayCollection();
+    }
 
     public function getId(): ?Ulid
     {
@@ -72,18 +70,6 @@ class AdditionalFee implements TranslatableInterface
     public function setDescription(string $description): static
     {
         $this->description = $description;
-
-        return $this;
-    }
-
-    public function getFeeAmount(): float
-    {
-        return $this->feeAmount;
-    }
-
-    public function setFeeAmount(float $feeAmount): static
-    {
-        $this->feeAmount = $feeAmount;
 
         return $this;
     }
@@ -129,18 +115,6 @@ class AdditionalFee implements TranslatableInterface
         return $this;
     }
 
-    public function getValidityFrom(): ?\DateTimeImmutable
-    {
-        return $this->validityFrom;
-    }
-
-    public function setValidityFrom(\DateTimeImmutable $validityFrom): static
-    {
-        $this->validityFrom = $validityFrom;
-
-        return $this;
-    }
-
     public function __toString(): string
     {
         return $this->getDescription();
@@ -149,19 +123,6 @@ class AdditionalFee implements TranslatableInterface
     public function __clone(): void
     {
         $this->id = new Ulid();
-    }
-
-    #[ORM\PrePersist]
-    public function setDefaultValidityFrom(): void
-    {
-        if (null === $this->getValidityFrom()) {
-            if ($this->rentRecipe instanceof RentalRecipe) {
-                $date = $this->rentRecipe->getValidityFrom();
-            } else {
-                $date = new \DateTimeImmutable();
-            }
-            $this->setValidityFrom($date);
-        }
     }
 
     #[ORM\PreRemove]
@@ -175,39 +136,42 @@ class AdditionalFee implements TranslatableInterface
         return AdditionalFeeEnum::getTranslateAbleValue($this->getDescription())->trans($translator, $locale);
     }
 
-    public function getParent(): ?self
+    /**
+     * @return Collection<int, AdditionalFeePayment>
+     */
+    public function getAdditionalFeePayments(): Collection
     {
-        return $this->parent;
+        return $this->additionalFeePayments;
     }
 
-    public function setParent(?self $parent): static
+    public function addAdditionalFeePayment(AdditionalFeePayment $additionalFeePayment): static
     {
-        $this->parent = $parent;
+        if (!$this->additionalFeePayments->contains($additionalFeePayment)) {
+            $this->additionalFeePayments->add($additionalFeePayment);
+            $additionalFeePayment->setAdditionalFee($this);
+        }
 
         return $this;
     }
 
-    public function getChild(): ?self
+    public function removeAdditionalFeePayment(AdditionalFeePayment $additionalFeePayment): static
     {
-        return $this->child;
-    }
-
-    public function setChild(?self $child): static
-    {
-        $this->child = $child;
+        if ($this->additionalFeePayments->removeElement($additionalFeePayment)) {
+            // set the owning side to null (unless already changed)
+            if ($additionalFeePayment->getAdditionalFee() === $this) {
+                $additionalFeePayment->setAdditionalFee(null);
+            }
+        }
 
         return $this;
     }
 
-    public function getValidityTo(): ?\DateTimeImmutable
+    public function getFeePaymentForDate(\DateTimeImmutable $date): AdditionalFeePayment|false
     {
-        return $this->validityTo;
-    }
-
-    public function setValidityTo(?\DateTimeImmutable $validityTo): static
-    {
-        $this->validityTo = $validityTo;
-
-        return $this;
+        return $this->getAdditionalFeePayments()
+            ->filter(function (AdditionalFeePayment $payment) use ($date) {
+                return $payment->getValidityFrom() <= $date && (null === $payment->getValidityTo() || $payment->getValidityTo() > $date);
+            })
+            ->first();
     }
 }

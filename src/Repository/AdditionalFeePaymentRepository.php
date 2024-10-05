@@ -2,39 +2,39 @@
 
 namespace App\Repository;
 
-use App\Entity\Overpayment;
+use App\Entity\AdditionalFeePayment;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Overpayment>
+ * @extends ServiceEntityRepository<AdditionalFeePayment>
  */
-class OverpaymentRepository extends ServiceEntityRepository
+class AdditionalFeePaymentRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Overpayment::class);
+        parent::__construct($registry, AdditionalFeePayment::class);
     }
 
     //    /**
-    //     * @return Overpayment[] Returns an array of Overpayment objects
+    //     * @return AdditionalFeePayment[] Returns an array of AdditionalFeePayment objects
     //     */
     //    public function findByExampleField($value): array
     //    {
-    //        return $this->createQueryBuilder('o')
-    //            ->andWhere('o.exampleField = :val')
+    //        return $this->createQueryBuilder('a')
+    //            ->andWhere('a.exampleField = :val')
     //            ->setParameter('val', $value)
-    //            ->orderBy('o.id', 'ASC')
+    //            ->orderBy('a.id', 'ASC')
     //            ->setMaxResults(10)
     //            ->getQuery()
     //            ->getResult()
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?Overpayment
+    //    public function findOneBySomeField($value): ?AdditionalFeePayment
     //    {
-    //        return $this->createQueryBuilder('o')
-    //            ->andWhere('o.exampleField = :val')
+    //        return $this->createQueryBuilder('a')
+    //            ->andWhere('a.exampleField = :val')
     //            ->setParameter('val', $value)
     //            ->getQuery()
     //            ->getOneOrNullResult()

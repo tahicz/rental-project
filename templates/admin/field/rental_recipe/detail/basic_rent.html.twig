@@ -1,0 +1,45 @@
+{# @var recipe \App\Entity\RentalRecipePayment #}
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+
+{% if ea.crud.currentPage == 'detail' %}
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th scope="col">{{ 'Amount'|trans({}, 'estate-rent-admin') }}</th>
+            <th scope="col">{{ 'Maturity'|trans({}, 'estate-rent-admin') }}</th>
+            <th scope="col">{{ 'Validity From'|trans({}, 'estate-rent-admin') }}</th>
+            <th scope="col">{{ 'Validity To'|trans({}, 'estate-rent-admin') }}</th>
+            <th scope="col">{{ 'Note'|trans({}, 'estate-rent-admin') }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for recipe in field.value %}
+            <tr>
+                <th scope="row">
+                    {{ recipe.amount|format_currency('CZK') }}
+                </th>
+                <td>
+                    {{ recipe.maturity }}
+                </td>
+                <td>
+                    {{ recipe.validityFrom|date('d. m. Y') }}
+                </td>
+                <td>
+                    {% if recipe.validityTo is not null %}
+                        {{ recipe.validityTo|date('d. m. Y') }}
+                    {% else %}
+                        ---
+                    {% endif %}
+                </td>
+                <td>
+                    {{ recipe.note }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+{% if ea.crud.currentPage == 'index' %}
+    {{ field.value.last.amount|format_currency('CZK') }}
+{% endif %}

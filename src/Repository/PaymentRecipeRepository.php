@@ -3,13 +3,15 @@
 namespace App\Repository;
 
 use App\Entity\PaymentRecipe;
+use App\Entity\RentalRecipe;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<PaymentRecipe>
  */
-class PaymentRepository extends ServiceEntityRepository
+class PaymentRecipeRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -90,5 +92,23 @@ class PaymentRepository extends ServiceEntityRepository
     public function flush(): void
     {
         $this->getEntityManager()->flush();
+    }
+
+    public function getPaymentsFrom(RentalRecipe $rentalRecipe, \DateTime $from): mixed
+    {
+        return $this->createQueryBuilder('p')
+                    ->select('p')
+                    ->andWhere('p.maturityDate > :now')
+                    ->andWhere('p.paidAmount is null')
+                    ->andWhere('p.rentalRecipe = :rentalRecipe')
+                    ->setParameters(
+                        new ArrayCollection([
+                            'now' => $from->format('Y-m-d H:i:s'),
+                            'rentalRecipe' => $rentalRecipe,
+                        ])
+                    )
+                    ->orderBy('p.id', 'ASC')
+                    ->getQuery()
+                    ->getResult();
     }
 }

@@ -5,16 +5,14 @@ namespace App\Controller\Admin;
 use App\Entity\AdditionalFee;
 use App\Enum\AdditionalFeeEnum;
 use App\Enum\PaymentFrequencyEnum;
-use App\Enum\SystemEnum;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 
 class AdditionalFeeCrudController extends AbstractCrudController
 {
@@ -29,20 +27,19 @@ class AdditionalFeeCrudController extends AbstractCrudController
             ->onlyOnDetail();
         yield ChoiceField::new('description')
             ->setRequired(true)
-            ->setChoices(AdditionalFeeEnum::translateAbleChoices())
-        ;
-        yield MoneyField::new('feeAmount', 'Fee amount')
-            ->setRequired(true)
-            ->setCurrency(SystemEnum::CURRENCY->value)
-            ->setStoredAsCents(false);
+            ->setChoices(AdditionalFeeEnum::translateAbleChoices());
+        yield CollectionField::new('additionalFeePayments')
+            ->setTemplatePath('admin/field/additional_fee/detail/additional_fee_payment.html.twig')
+            ->allowAdd()
+            ->allowDelete(false)
+            ->setEntryIsComplex(true)
+            ->useEntryCrudForm(AdditionalFeePaymentCrudController::class);
         yield ChoiceField::new('paymentFrequency', 'Payment frequency')
             ->setChoices(PaymentFrequencyEnum::translateAbleChoices())
             ->setRequired(true);
         yield BooleanField::new('billable')
             ->renderAsSwitch(in_array($pageName, [Crud::PAGE_NEW, Crud::PAGE_EDIT], true));
-        yield DateField::new('validityFrom');
         yield AssociationField::new('rentRecipe');
-        yield DateField::new('validityFrom');
         yield DateTimeField::new('createdAt')
             ->hideOnForm();
         yield DateTimeField::new('updatedAt')

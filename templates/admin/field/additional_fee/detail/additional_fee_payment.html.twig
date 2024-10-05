@@ -1,0 +1,46 @@
+{# @var fee \App\Entity\AdditionalFeePayment #}
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+
+{% if ea.crud.currentPage == 'detail' %}
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th scope="col">{{ 'Amount'|trans({}, 'estate-rent-admin') }}</th>
+            <th scope="col">{{ 'Validity From'|trans({}, 'estate-rent-admin') }}</th>
+            <th scope="col">{{ 'Validity To'|trans({}, 'estate-rent-admin') }}</th>
+            <th scope="col">{{ 'Note'|trans({}, 'estate-rent-admin') }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for fee in field.value %}
+            <tr>
+                <th scope="row">
+                    {{ fee.amount|format_currency('CZK') }}
+                </th>
+                <td>
+                    {{ fee.validityFrom|date('d. m. Y') }}
+                </td>
+                <td>
+                    {% if fee.validityTo is not null %}
+                        {{ fee.validityTo|date('d. m. Y') }}
+                    {% else %}
+                        ---
+                    {% endif %}
+                </td>
+                <td>
+                    {{ fee.note }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+{% if ea.crud.currentPage == 'index' %}
+    {% set lastFee = field.value.last %}
+    {% if lastFee == false %}
+        {{ 0|format_currency('CZK') }}
+    {% else %}
+        {{ field.value.last.amount|format_currency('CZK') }}
+    {% endif %}
+{% endif %}
