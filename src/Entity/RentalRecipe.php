@@ -71,11 +71,13 @@ class RentalRecipe
 
     public function getFullPaymentForMonth(\DateTimeImmutable $paymentDate): float
     {
-        $paymentsForRecipe = $this->getRecipePayment()->filter(function (RentalRecipePayment $payment) use ($paymentDate) {
-            return $payment->getValidityFrom() >= $paymentDate && (null === $payment->getValidityTo() || $payment->getValidityTo() < $paymentDate);
-        });
+        $payment = $this->getRecipePayment()
+            ->filter(function (RentalRecipePayment $payment) use ($paymentDate) {
+                return $payment->getValidityFrom() <= $paymentDate && (null === $payment->getValidityTo(
+                ) || $payment->getValidityTo() > $paymentDate);
+            })
+            ->first();
 
-        $payment = $paymentsForRecipe->first();
         if (false === $payment) {
             $amount = 0.0;
         } else {
@@ -87,12 +89,13 @@ class RentalRecipe
             if (false === $fee) {
                 continue;
             }
-            $payment = match ($additionalFee->getPaymentFrequency()) {
+
+            $monthlyPayment = match ($additionalFee->getPaymentFrequency()) {
                 PaymentFrequencyEnum::ANNUALLY->value => round($fee->getAmount() / 12, 2),
                 default => $fee->getAmount()
             };
 
-            $amount += $payment;
+            $amount += $monthlyPayment;
         }
 
         return round($amount, 2);

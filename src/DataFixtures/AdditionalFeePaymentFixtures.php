@@ -23,6 +23,11 @@ class AdditionalFeePaymentFixtures extends Fixture implements DependentFixtureIn
             } else {
                 $feePayment->setValidityFrom(new \DateTimeImmutable($item['validity_from']));
             }
+            if (null === $item['validity_to']) {
+                $feePayment->setValidityTo(null);
+            } else {
+                $feePayment->setValidityTo(new \DateTimeImmutable($item['validity_to']));
+            }
 
             $manager->persist($feePayment);
         }
@@ -35,6 +40,7 @@ class AdditionalFeePaymentFixtures extends Fixture implements DependentFixtureIn
      *     'amount':float,
      *     'note':string,
      *     'validity_from':string|null,
+     *     'validity_to':string|null,
      *     'ref': string
      * }>
      */
@@ -44,6 +50,7 @@ class AdditionalFeePaymentFixtures extends Fixture implements DependentFixtureIn
             'amount' => 700.0,
             'note' => 'zacatek',
             'validity_from' => null,
+            'validity_to' => '2022-05-24',
             'ref' => AdditionalFeeFixtures::ADDITIONAL_FEE_1,
         ];
 
@@ -51,6 +58,7 @@ class AdditionalFeePaymentFixtures extends Fixture implements DependentFixtureIn
             'amount' => 1_000.0,
             'note' => 'zdražení',
             'validity_from' => '2022-05-25',
+            'validity_to' => null,
             'ref' => AdditionalFeeFixtures::ADDITIONAL_FEE_1,
         ];
 
@@ -58,6 +66,7 @@ class AdditionalFeePaymentFixtures extends Fixture implements DependentFixtureIn
             'amount' => 1_500.0,
             'note' => 'začátek',
             'validity_from' => null,
+            'validity_to' => '2021-06-24',
             'ref' => AdditionalFeeFixtures::ADDITIONAL_FEE_2,
         ];
 
@@ -65,6 +74,7 @@ class AdditionalFeePaymentFixtures extends Fixture implements DependentFixtureIn
             'amount' => 800.0,
             'note' => 'snížení spotřeby',
             'validity_from' => '2021-06-25',
+            'validity_to' => '2023-08-24',
             'ref' => AdditionalFeeFixtures::ADDITIONAL_FEE_2,
         ];
 
@@ -72,6 +82,7 @@ class AdditionalFeePaymentFixtures extends Fixture implements DependentFixtureIn
             'amount' => 1_200.0,
             'note' => 'zvýšení spotřeby',
             'validity_from' => '2023-08-25',
+            'validity_to' => null,
             'ref' => AdditionalFeeFixtures::ADDITIONAL_FEE_2,
         ];
     }

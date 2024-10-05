@@ -130,13 +130,7 @@ class AdditionalFeePayment
         }
         $lastFeePayment = $allPayments->get($allPayments->count() - 2);
 
-        if (null === $lastFeePayment) {
-            $rentalRecipe = $this->getAdditionalFee()?->getRentRecipe();
-            if (null === $rentalRecipe) {
-                throw new \RuntimeException('No rental recipe set');
-            }
-            $this->setValidityFrom($rentalRecipe->getValidityFrom());
-        } elseif (empty($this->getValidityFrom())) {
+        if (null === $lastFeePayment || empty($this->getValidityFrom())) {
             $rentalRecipe = $this->getAdditionalFee()?->getRentRecipe();
             if (null === $rentalRecipe) {
                 throw new \RuntimeException('No rental recipe set');

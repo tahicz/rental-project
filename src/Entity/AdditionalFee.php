@@ -168,8 +168,10 @@ class AdditionalFee implements TranslatableInterface
 
     public function getFeePaymentForDate(\DateTimeImmutable $date): AdditionalFeePayment|false
     {
-        return $this->getAdditionalFeePayments()->filter(function (AdditionalFeePayment $payment) use ($date) {
-            return $payment->getValidityFrom() <= $date && (null === $payment->getValidityTo() || $payment->getValidityTo() > $date);
-        })->first();
+        return $this->getAdditionalFeePayments()
+            ->filter(function (AdditionalFeePayment $payment) use ($date) {
+                return $payment->getValidityFrom() <= $date && (null === $payment->getValidityTo() || $payment->getValidityTo() > $date);
+            })
+            ->first();
     }
 }

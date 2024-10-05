@@ -14,9 +14,6 @@ class AdditionalFeeFixtures extends Fixture implements DependentFixtureInterface
 {
     public const ADDITIONAL_FEE_1 = __CLASS__.'_1';
     public const ADDITIONAL_FEE_2 = __CLASS__.'_2';
-    public const ADDITIONAL_FEE_3 = __CLASS__.'_3';
-    public const ADDITIONAL_FEE_4 = __CLASS__.'_4';
-    public const ADDITIONAL_FEE_5 = __CLASS__.'_5';
 
     public function load(ObjectManager $manager): void
     {
