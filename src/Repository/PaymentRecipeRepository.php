@@ -103,7 +103,7 @@ class PaymentRecipeRepository extends ServiceEntityRepository
                     ->andWhere('p.rentalRecipe = :rentalRecipe')
                     ->setParameters(
                         new ArrayCollection([
-                            'now' => $from,
+                            'now' => $from->format('Y-m-d H:i:s'),
                             'rentalRecipe' => $rentalRecipe,
                         ])
                     )

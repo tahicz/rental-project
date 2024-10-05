@@ -18,7 +18,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormInterface;
@@ -42,25 +41,12 @@ class RentalRecipeCrudController extends AbstractCrudController
     {
         yield IdField::new('id', 'ID')
             ->onlyOnDetail();
-        //        yield MoneyField::new('basicRent', 'Basic rent')
-        //            ->setRequired(true)
-        //            ->setCurrency(SystemEnum::CURRENCY->value)
-        //            ->setStoredAsCents(false)
-        //            ->setTemplatePath('admin/field/rental_recipe/detail/basic_rent.html.twig')
-        //            ->formatValue(function (float $basicRent, RentalRecipe $rentalRecipe): array {
-        //                $data = [];
-        //                while ($rentalRecipe instanceof RentalRecipe) {
-        //                    $data[] = $rentalRecipe;
-        //                    $rentalRecipe = $rentalRecipe->getChild();
-        //                }
-        //
-        //                return $data;
-        //            })
-        //        ;
         yield CollectionField::new('recipePayment', 'Rent payments')
             ->setTemplatePath('admin/field/rental_recipe/detail/basic_rent.html.twig')
             ->allowAdd(Crud::PAGE_EDIT === $pageName)
-            ->allowDelete(false);
+            ->allowDelete(false)
+            ->allowAdd(false)
+            ->setEntryIsComplex(true);
         yield CollectionField::new('additionalFees', 'Additional fees')
             ->hideOnIndex()
             ->useEntryCrudForm(AdditionalFeeCrudController::class)

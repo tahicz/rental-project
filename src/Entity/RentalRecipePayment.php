@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Entity\Traits\Timestampable;
+use App\Enum\SystemEnum;
 use App\Helper\PaymentHelper;
 use App\Repository\RentalRecipePaymentRepository;
 use Doctrine\DBAL\Types\Types;
@@ -52,6 +53,11 @@ class RentalRecipePayment
     public function getAmount(): float
     {
         return $this->amount;
+    }
+
+    public function getFormatedAmount(): string
+    {
+        return (string) PaymentHelper::getFormatedCurrency($this->amount, SystemEnum::CURRENCY->value);
     }
 
     public function setAmount(float $amount): static
@@ -124,5 +130,10 @@ class RentalRecipePayment
         $this->note = $note;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->getFormatedAmount().' valid from '.$this->getValidityFrom()->format('Y-m-d');
     }
 }
